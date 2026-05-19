@@ -453,7 +453,9 @@ jobs:
 
           tauri_args="${{ matrix.args }}"
           if [[ "${{ needs.prepare.outputs.create_release }}" == "true" ]]; then
-            tauri_args="${tauri_args:+$tauri_args }--config {\"bundle\":{\"createUpdaterArtifacts\":true}}"
+            # Write a config override file to avoid shell quoting and escaping issues on Windows and Linux
+            echo '{"bundle":{"createUpdaterArtifacts":true}}' > apps/desktop/release-config.json
+            tauri_args="${tauri_args:+$tauri_args }--config release-config.json"
           fi
 
           {
