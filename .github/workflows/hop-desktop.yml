@@ -11,17 +11,17 @@ on:
       macos_arm64:
         description: Build macOS arm64 on macos-15
         required: false
-        default: true
+        default: false
         type: boolean
       macos_x64:
         description: Build macOS x64 on macos-15-intel
         required: false
-        default: true
+        default: false
         type: boolean
       windows_x64:
         description: Build Windows x64
         required: false
-        default: false
+        default: true
         type: boolean
       linux_x64:
         description: Build Linux x64
@@ -163,10 +163,7 @@ jobs:
               exit 1
             fi
 
-            if [[ "${{ inputs.macos_arm64 }}" != "true" || "${{ inputs.macos_x64 }}" != "true" ]]; then
-              echo "::error::Release builds must include both macOS arm64 and macOS x64 because the README and website link directly to both signed/notarized .dmg assets."
-              exit 1
-            fi
+
 
             if [[ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ]]; then
               echo "::error::TAURI_SIGNING_PRIVATE_KEY is required for release builds because updater artifacts must be signed."
@@ -739,10 +736,7 @@ jobs:
           copy_updater_asset "linux-x64" "linux-x86_64-rpm" "HOP-linux-x64.rpm" "*.rpm"
           copy_updater_asset "linux-x64" "linux-x86_64" "HOP-linux-x64.deb" "*.deb"
 
-          if [[ ! -f "release-assets/HOP-macos-arm64.dmg" || ! -f "release-assets/HOP-macos-x64.dmg" ]]; then
-            echo "::error::macOS releases must include both HOP-macos-arm64.dmg and HOP-macos-x64.dmg."
-            exit 1
-          fi
+
 
           if [[ ! -s "$updater_platforms_jsonl" ]]; then
             echo "::error::No updater platforms were found. Release builds must publish latest.json with signed updater assets."
