@@ -99,7 +99,7 @@ describe('TauriBridge', () => {
       docInfo: { pageCount: 2, fontsUsed: [] },
       message: 'opened.hwp — 2페이지',
     });
-    expect(document.title).toBe('opened.hwp - HOP');
+    expect(document.title).toBe('opened.hwp - ndbHwp');
     expect(bridge.hasUnsavedChanges()).toBe(false);
   });
 
@@ -180,7 +180,7 @@ describe('TauriBridge', () => {
     await bridge.openDocumentByPath('/tmp/new.hwp');
 
     expect(invokeMock).toHaveBeenLastCalledWith('close_document', { docId: 'old-doc' });
-    expect(document.title).toBe('new.hwp - HOP');
+    expect(document.title).toBe('new.hwp - ndbHwp');
   });
 
   it('opens a document selected from the Tauri dialog', async () => {
@@ -290,7 +290,7 @@ describe('TauriBridge', () => {
       warnings: [],
     });
 
-    expect(document.title).toBe('source.hwp - HOP');
+    expect(document.title).toBe('source.hwp - ndbHwp');
     expect(bridge.hasUnsavedChanges()).toBe(false);
 
     bridge.markDocumentDirty();
@@ -299,7 +299,7 @@ describe('TauriBridge', () => {
     });
 
     expect(bridge.hasUnsavedChanges()).toBe(true);
-    expect(document.title).toBe('• source.hwp - HOP');
+    expect(document.title).toBe('• source.hwp - ndbHwp');
   });
 
   it('proxies updater commands through the Tauri bridge', async () => {
@@ -417,7 +417,7 @@ describe('TauriBridge', () => {
     expect(result?.sourcePath).toBe('/tmp/report.hwp');
     expect(result?.revision).toBe(6);
     expect(bridge.hasUnsavedChanges()).toBe(false);
-    expect(document.title).toBe('report.hwp - HOP');
+    expect(document.title).toBe('report.hwp - ndbHwp');
   });
 
   it('writes large staged saves in multiple fs chunks', async () => {

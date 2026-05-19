@@ -59,13 +59,13 @@ test('HOP product info keeps the upstream rhwp version and adds HOP version sepa
   assert.match(viteConfig, /__HOP_VERSION__:\s*JSON\.stringify\(desktopConfig\.version\)/);
   assert.match(aboutDialog, /extends UpstreamAboutDialog/);
   assert.match(aboutDialog, /super\.createBody\(\)/);
-  assert.match(aboutDialog, /HOP \$\{__HOP_VERSION__\}/);
+  assert.match(aboutDialog, /(HOP|ndbHwp) \$\{__HOP_VERSION__\}/);
 });
 
 test('HOP keeps PDF export menu-only without a stale Ctrl+E label', async () => {
   const fileCommands = await readFile(join(repoRoot, 'apps/studio-host/src/command/commands/file.ts'), 'utf8');
   const indexHtml = await readFile(join(repoRoot, 'apps/studio-host/index.html'), 'utf8');
-  const pdfMenuItem = indexHtml.match(/<div class="md-item disabled" data-cmd="file:export-pdf">.*?<\/div>/);
+  const pdfMenuItem = indexHtml.match(/<div class="md-item disabled" data-cmd="file:export-pdf">[\s\S]*?<\/div>/);
 
   assert.doesNotMatch(fileCommands, /id:\s*['"]file:export-pdf['"][\s\S]*?shortcutLabel:/);
   assert.ok(pdfMenuItem, 'PDF export menu item should exist');
