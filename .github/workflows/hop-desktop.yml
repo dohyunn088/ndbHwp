@@ -678,15 +678,15 @@ jobs:
             local pattern
             local match
 
+            local search_root="artifacts/hop-desktop-${platform}-bundle"
             for pattern in "$@"; do
               while IFS= read -r match; do
                 if [[ -f "${match}.sig" ]]; then
                   candidate="$match"
                   break 2
                 fi
-              done < <(find artifacts \
+              done < <(find "$search_root" \
                 -type f \
-                -path "*/hop-desktop-${platform}-*" \
                 -name "$pattern" \
                 ! -name "*.sig" \
                 ! -name "*.blockmap" \
