@@ -7,7 +7,7 @@ export class AboutDialog extends UpstreamAboutDialog {
 
     const hopVersion = document.createElement('div');
     hopVersion.className = 'about-hop-version';
-    hopVersion.textContent = `HOP ${__HOP_VERSION__}`;
+    hopVersion.textContent = `ndbHwp ${__HOP_VERSION__}`;
 
     if (version?.parentNode) {
       version.parentNode.insertBefore(hopVersion, version.nextSibling);

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "HOP",
+  "productName": "ndbHwp",
   "version": "0.2.0",
-  "identifier": "net.golbin.hop",
+  "identifier": "com.ndb.hwp",
   "build": {
     "beforeDevCommand": "cd ../.. && pnpm --filter @golbin/hop-studio-host dev",
     "beforeBuildCommand": "cd ../.. && pnpm --filter @golbin/hop-studio-host build",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "HOP",
+        "title": "ndbHwp",
         "label": "main",
         "url": "index.html",
         "width": 1280,
@@ -31,16 +31,15 @@
     "targets": "all",
     "publisher": "golbin.net",
     "shortDescription": "Open desktop editor for HWP and HWPX documents",
-    "longDescription": "HOP is Open HWP. HOP opens, edits, saves, and exports HWP/HWPX documents.",
+    "longDescription": "ndbHwp opens, edits, saves, and exports HWP/HWPX documents.",
     "category": "Productivity",
-    "copyright": "Copyright (c) 2026 HOP contributors",
+    "copyright": "Copyright (c) 2026 ndbHwp contributors",
     "icon": [
-      "../../../assets/logo/logo-32.png",
-      "../../../assets/logo/logo-128.png",
-      "../../../assets/logo/logo-256.png",
-      "../../../assets/logo/logo-512.png",
-      "../../../assets/logo/icon.icns",
-      "../../../assets/logo/favicon.ico"
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
     ],
     "fileAssociations": [
       {
@@ -66,7 +65,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZGQzA1Qzc3QkQ0ODhFM0YKUldRL2praTlkMXpBL3pTcUFUczdzWFBFSjV3QnBPczhJTy8zMG5OcVhYNi9sbDJtRS9JY2wxN00K",
       "endpoints": [
-        "https://github.com/golbin/hop/releases/latest/download/latest.json"
+        "https://github.com/dohyunn088/ndbHwp/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"

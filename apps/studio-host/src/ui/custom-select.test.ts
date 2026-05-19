@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { enhanceCustomSelects, getCustomSelectRoot, syncCustomSelect } from './custom-select';
 
+/**
+ * Node.js 테스트 환경에서 DOM 노드(HTMLElement)를 흉내 내기 위한 가짜 클래스입니다.
+ * jsdom 같은 브라우저 환경 없이도 UI 로직을 가볍게 테스트할 수 있도록 도와줍니다.
+ */
 class FakeElement {
   tagName: string;
   private _className = '';
@@ -19,6 +23,7 @@ class FakeElement {
   private classes = new Set<string>();
   private observer: { callback: MutationCallback } | null = null;
 
+  /** 요소를 생성할 때 태그 이름을 대문자로 저장합니다. */
   constructor(tagName = 'div') {
     this.tagName = tagName.toUpperCase();
   }
@@ -32,6 +37,7 @@ class FakeElement {
     this.classes = new Set(value.split(/\s+/).filter(Boolean));
   }
 
+  /** DOM의 classList API(add, remove, contains, toggle)를 흉내 냅니다. */
   get classList() {
     const self = this;
     return {
@@ -127,6 +133,7 @@ class FakeElement {
     return this.children.some((c) => c.contains(node));
   }
 
+  /** CSS 선택자와 일치하는 첫 번째 자손 요소를 찾습니다. */
   querySelector(selector: string): FakeElement | null {
     for (const child of this.allDescendants()) {
       if (matchesSelector(child, selector)) return child;
@@ -134,6 +141,7 @@ class FakeElement {
     return null;
   }
 
+  /** CSS 선택자와 일치하는 모든 자손 요소를 배열로 반환합니다. */
   querySelectorAll<T = FakeElement>(selector: string): T[] {
     return this.allDescendants().filter((c) => matchesSelector(c, selector)) as T[];
   }
@@ -166,6 +174,10 @@ class FakeOptGroup extends FakeElement {
   }
 }
 
+/**
+ * 테스트 내에서 querySelector 기능을 지원하기 위한 간단한 CSS 선택자 매칭 함수입니다.
+ * 태그 이름, 클래스, ID 및 간단한 조합 선택자를 처리합니다.
+ */
 function matchesSelector(el: FakeElement, selector: string): boolean {
   const parts = selector.split(',').map((s) => s.trim());
   return parts.some((part) => {
@@ -181,6 +193,9 @@ function matchesSelector(el: FakeElement, selector: string): boolean {
   });
 }
 
+/**
+ * <option> 자식들을 포함하는 가짜 <select> 요소를 쉽게 생성해주는 헬퍼 함수입니다.
+ */
 function createFakeSelect(className: string, options: string[] = []): FakeElement {
   const select = new FakeElement('select');
   select.className = className;
@@ -199,6 +214,9 @@ function createFakeSelect(className: string, options: string[] = []): FakeElemen
   return select;
 }
 
+/**
+ * 전역 document 객체를 흉내 내는 가짜 클래스입니다. (head와 body 요소 포함)
+ */
 class FakeDocument {
   body = new FakeElement('body');
   head = new FakeElement('head');
@@ -226,6 +244,10 @@ class FakeMutationObserver {
   disconnect() {}
 }
 
+/**
+ * 커스텀 셀렉트(custom-select) 컴포넌트에 대한 테스트 스위트입니다.
+ * 네이티브 <select> 요소가 커스텀 스타일의 드롭다운으로 올바르게 변환되고, 상태가 잘 동기화되는지 검증합니다.
+ */
 describe('custom-select', () => {
   let fakeDocument: FakeDocument;
 
@@ -246,16 +268,19 @@ describe('custom-select', () => {
     delete (globalThis as Record<string, unknown>).Event;
   });
 
+  /** 아직 변환되지 않은 일반 select 요소에 대해 getCustomSelectRoot를 호출하면 null을 반환하는지 테스트합니다. */
   it('getCustomSelectRoot returns null for an unenhanced select', () => {
     const select = createFakeSelect('sb-combo');
     expect(getCustomSelectRoot(select as unknown as HTMLSelectElement)).toBeNull();
   });
 
+  /** 아직 변환되지 않은 일반 select 요소에 대해 syncCustomSelect를 호출해도 아무런 작업(no-op) 없이 통과하는지 테스트합니다. */
   it('syncCustomSelect is a no-op for an unenhanced select', () => {
     const select = createFakeSelect('sb-combo');
     expect(() => syncCustomSelect(select as unknown as HTMLSelectElement)).not.toThrow();
   });
 
+  /** 지원하는 특정 CSS 클래스가 없는 select 요소는 변환하지 않고 건너뛰는지 테스트합니다. */
   it('skips selects that do not match supported class selectors', () => {
     const container = new FakeElement('div');
     const select = createFakeSelect('unsupported-class', ['A', 'B']);
@@ -266,6 +291,7 @@ describe('custom-select', () => {
     expect(getCustomSelectRoot(select as unknown as HTMLSelectElement)).toBeNull();
   });
 
+  /** 다중 선택(multiple) 속성이 있는 select 요소는 커스텀 드롭다운으로 변환하지 않는지 테스트합니다. */
   it('skips select elements with multiple attribute', () => {
     const container = new FakeElement('div');
     const select = createFakeSelect('sb-combo', ['A', 'B']);
@@ -277,6 +303,7 @@ describe('custom-select', () => {
     expect(getCustomSelectRoot(select as unknown as HTMLSelectElement)).toBeNull();
   });
 
+  /** 한 번에 여러 개를 보여주는(size 속성이 1 초과인) select 요소는 변환하지 않는지 테스트합니다. */
   it('skips select elements with size > 1', () => {
     const container = new FakeElement('div');
     const select = createFakeSelect('sb-combo', ['A', 'B']);
@@ -288,6 +315,7 @@ describe('custom-select', () => {
     expect(getCustomSelectRoot(select as unknown as HTMLSelectElement)).toBeNull();
   });
 
+  /** data-native-select="true" 속성이 명시되어 네이티브 UI를 유지하려는 select 요소는 건너뛰는지 테스트합니다. */
   it('skips select elements with data-native-select="true"', () => {
     const container = new FakeElement('div');
     const select = createFakeSelect('sb-combo', ['A', 'B']);
@@ -299,6 +327,10 @@ describe('custom-select', () => {
     expect(getCustomSelectRoot(select as unknown as HTMLSelectElement)).toBeNull();
   });
 
+  /** 
+   * 조건에 맞는 select 요소가 커스텀 드롭다운으로 올바르게 변환되며,
+   * 옵션 텍스트와 선택 상태가 정확하게 렌더링되는지 테스트합니다.
+   */
   it('enhances a matching select and creates option rows with correct display', () => {
     const container = new FakeElement('div');
     const select = createFakeSelect('sb-combo', ['Option A', 'Option B']);
@@ -323,6 +355,7 @@ describe('custom-select', () => {
     expect((menuRows[1] as FakeElement).classList.contains('selected')).toBe(false);
   });
 
+  /** 같은 대상을 두 번 변환하려 해도 중복 생성되지 않고 기존 상태를 유지(멱등성)하는지 테스트합니다. */
   it('does not enhance the same select twice (idempotent DOM)', () => {
     const container = new FakeElement('div');
     const select = createFakeSelect('dialog-select', ['A', 'B']);
@@ -341,6 +374,10 @@ describe('custom-select', () => {
     expect(rowsAfter.length).toBe(2);
   });
 
+  /** 
+   * 네이티브 select의 값을 바꾸고 syncCustomSelect를 호출했을 때, 
+   * 커스텀 드롭다운의 표시 텍스트와 선택된(selected) 클래스가 올바르게 갱신되는지 테스트합니다.
+   */
   it('syncCustomSelect updates display text and selected class', () => {
     const container = new FakeElement('div');
     const select = createFakeSelect('sb-combo', ['First', 'Second']);
