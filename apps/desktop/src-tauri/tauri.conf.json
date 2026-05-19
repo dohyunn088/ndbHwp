@@ -43,13 +43,17 @@
     ],
     "fileAssociations": [
       {
-        "ext": ["hwp"],
+        "ext": [
+          "hwp"
+        ],
         "name": "HWP Document",
         "description": "Hangul Word Processor document",
         "mimeType": "application/x-hwp"
       },
       {
-        "ext": ["hwpx"],
+        "ext": [
+          "hwpx"
+        ],
         "name": "HWPX Document",
         "description": "Hangul Word Processor XML document",
         "mimeType": "application/vnd.hancom.hwpx"
@@ -63,7 +67,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZGQzA1Qzc3QkQ0ODhFM0YKUldRL2praTlkMXpBL3pTcUFUczdzWFBFSjV3QnBPczhJTy8zMG5OcVhYNi9sbDJtRS9JY2wxN00K",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEFFRkFBOUQ4RTA3QTQ5MDYKUldRR1NYcmcyS242cm9STnZrZEpBMzE4V25ISW04ZTZuODZoWFBDclBoTElPU1UyM0JXT2hFYVUK",
       "endpoints": [
         "https://github.com/dohyunn088/ndbHwp/releases/latest/download/latest.json"
       ],
