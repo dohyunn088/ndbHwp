@@ -715,9 +715,9 @@ jobs:
           copy_release_asset "linux-x64" "deb" "HOP-linux-x64.deb"
           copy_release_asset "linux-x64" "rpm" "HOP-linux-x64.rpm"
 
-          copy_updater_asset "windows-x64" "windows-x86_64-msi" "HOP-windows-x64-msi.zip" "*.msi.zip"
-          copy_updater_asset "windows-x64" "windows-x86_64-nsis" "HOP-windows-x64-nsis.zip" "*.nsis.zip"
-          copy_updater_asset "windows-x64" "windows-x86_64" "HOP-windows-x64-msi.zip" "*.msi.zip"
+          copy_updater_asset "windows-x64" "windows-x86_64-msi" "HOP-windows-x64.msi" "*.msi"
+          copy_updater_asset "windows-x64" "windows-x86_64-nsis" "HOP-windows-x64.exe" "*.exe"
+          copy_updater_asset "windows-x64" "windows-x86_64" "HOP-windows-x64.msi" "*.msi"
           copy_updater_asset "linux-x64" "linux-x86_64-appimage" "HOP-linux-x64.AppImage.tar.gz" "*.AppImage.tar.gz"
           copy_updater_asset "linux-x64" "linux-x86_64" "HOP-linux-x64.AppImage.tar.gz" "*.AppImage.tar.gz"
 
