@@ -24,7 +24,7 @@ ndbHwp는 HWP/HWPX 문서를 보고 편집할 수 있는 오픈소스 Windows용
 
 최신 릴리즈는 아래 링크에서 받을 수 있습니다.
 
-* [Windows x64 (.msi)](https://github.com/dohyunn088/ndbHwp/releases/latest/download/HOP-windows-x64.msi)
+* [Windows x64 (.msi)](https://github.com/dohyunn088/ndbHwp/releases/latest/download/ndbHwp-windows-x64.msi)
 
 전체 릴리즈는 [GitHub Releases](https://github.com/dohyunn088/ndbHwp/releases)에서 확인할 수 있습니다.
 
