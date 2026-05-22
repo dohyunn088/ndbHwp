@@ -2,7 +2,7 @@
   "name": "@golbin/hop-studio-host",
   "version": "0.1.0",
   "private": true,
-  "description": "HOP studio host overlay for upstream rhwp-studio",
+  "description": "ndbHwp studio host overlay for upstream rhwp-studio",
   "license": "MIT",
   "type": "module",
   "dependencies": {

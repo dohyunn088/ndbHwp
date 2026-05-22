@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Default HOP desktop capability",
+  "description": "Default ndbHwp desktop capability",
   "windows": ["main", "main*"],
   "permissions": [
     "core:default",

@@ -10,7 +10,7 @@ vi.mock('@upstream/command/commands/table', () => ({
 import { tableCommands } from './table';
 
 describe('table command overrides', () => {
-  it('adds a HOP-owned cell selection command that routes through the input handler', () => {
+  it('adds a ndbHwp-owned cell selection command that routes through the input handler', () => {
     const enterOrAdvanceCellSelectionMode = vi.fn();
     const getInputHandler = vi.fn(() => ({ enterOrAdvanceCellSelectionMode }));
 

@@ -2256,7 +2256,7 @@ export class InputHandler {
     this.updateCaret();
   }
 
-  /** HOP-owned 셀 선택 진입/단계 진행 경로 (F5 대체). */
+  /** ndbHwp-owned 셀 선택 진입/단계 진행 경로 (F5 대체). */
   enterOrAdvanceCellSelectionMode(): boolean {
     if (!this.cursor.isInCell() || this.cursor.isInTextBox()) {
       return false;

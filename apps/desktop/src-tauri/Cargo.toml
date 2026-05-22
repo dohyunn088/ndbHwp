@@ -2,7 +2,7 @@
 name = "hop-desktop"
 version = "0.2.0"
 edition = "2021"
-description = "HOP - Open HWP desktop app"
+description = "ndbHwp - Open HWP desktop app"
 license = "MIT"
 
 [lib]

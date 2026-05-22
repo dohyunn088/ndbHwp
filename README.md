@@ -1,17 +1,16 @@
-<<<<<<< HEAD
-# HOP
+# ndbHwp
 
-**HOP is Open HWP**
+**ndbHwp is Open HWP**
 
-HOP는 HWP/HWPX 문서를 보고 편집할 수 있는 오픈소스 macOS, Windows, Linux용 데스크탑 앱입니다.
+ndbHwp는 HWP/HWPX 문서를 보고 편집할 수 있는 오픈소스 macOS, Windows, Linux용 데스크탑 앱입니다.
 
-문서 파싱과 렌더링의 기반은 [rhwp](https://github.com/edwardkim/rhwp)를 사용합니다. HOP는 그 위에 얇게 껍데기를 씌운 앱입니다. rhwp가 제공하는 기능을 바탕으로 파일 열기, 저장, PDF 내보내기, 인쇄, 파일 연결 같은 OS 통합 기능을 제공합니다.
+문서 파싱과 렌더링의 기반은 [rhwp](https://github.com/edwardkim/rhwp)를 사용합니다. ndbHwp는 그 위에 얇게 껍데기를 씌운 앱입니다. rhwp가 제공하는 기능을 바탕으로 파일 열기, 저장, PDF 내보내기, 인쇄, 파일 연결 같은 OS 통합 기능을 제공합니다.
 
-![HOP editor](assets/screenshots/hop-editor.webp)
+![ndbHwp editor](assets/screenshots/hop-editor.webp)
 
 ## 할 수 있는 일
 
-현재 HOP는 다음 흐름을 지원합니다.
+현재 ndbHwp는 다음 흐름을 지원합니다.
 
 * HWP/HWPX 문서 열기
 * HWP 문서 저장, 다른 이름으로 저장
@@ -65,9 +64,6 @@ paru -S hop-openhwp-bin
 
 ## Credits
 
-HOP는 [rhwp](https://github.com/edwardkim/rhwp)를 기반으로 합니다. HWP 엔진을 공개해 주신 개발자분께 감사드립니다.
+ndbHwp는 [rhwp](https://github.com/edwardkim/rhwp)를 기반으로 합니다. HWP 엔진을 공개해 주신 개발자분께 감사드립니다.
 
 License: MIT
-=======
-# ndbHwp
->>>>>>> 941b14e7df3c2385cbc3153b5d2d4d6e1665432d

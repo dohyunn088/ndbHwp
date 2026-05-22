@@ -17,7 +17,7 @@ vi.mock('@upstream/engine/input-handler-keyboard', () => ({
 
 import { onPaste } from './input-handler-keyboard';
 
-describe('HOP keyboard paste wrapper', () => {
+describe('ndbHwp keyboard paste wrapper', () => {
   beforeEach(() => {
     pasteCalls.length = 0;
     upstreamPasteMock.mockClear();
