@@ -706,18 +706,18 @@ jobs:
               >> "$updater_platforms_jsonl"
           }
 
-          copy_release_asset "windows-x64" "msi" "HOP-windows-x64.msi"
-          copy_release_asset "linux-x64" "AppImage" "HOP-linux-x64.AppImage"
+          copy_release_asset "windows-x64" "msi" "ndbHwp-windows-x64.msi"
+          copy_release_asset "linux-x64" "AppImage" "ndbHwp-linux-x64.AppImage"
 
-          copy_release_asset "windows-x64" "exe" "HOP-windows-x64.exe"
-          copy_release_asset "linux-x64" "deb" "HOP-linux-x64.deb"
-          copy_release_asset "linux-x64" "rpm" "HOP-linux-x64.rpm"
+          copy_release_asset "windows-x64" "exe" "ndbHwp-windows-x64.exe"
+          copy_release_asset "linux-x64" "deb" "ndbHwp-linux-x64.deb"
+          copy_release_asset "linux-x64" "rpm" "ndbHwp-linux-x64.rpm"
 
-          copy_updater_asset "windows-x64" "windows-x86_64-msi" "HOP-windows-x64.msi" "*.msi"
-          copy_updater_asset "windows-x64" "windows-x86_64-nsis" "HOP-windows-x64.exe" "*.exe"
-          copy_updater_asset "windows-x64" "windows-x86_64" "HOP-windows-x64.msi" "*.msi"
-          copy_updater_asset "linux-x64" "linux-x86_64-appimage" "HOP-linux-x64.AppImage.tar.gz" "*.AppImage.tar.gz"
-          copy_updater_asset "linux-x64" "linux-x86_64" "HOP-linux-x64.AppImage.tar.gz" "*.AppImage.tar.gz"
+          copy_updater_asset "windows-x64" "windows-x86_64-msi" "ndbHwp-windows-x64.msi" "*.msi"
+          copy_updater_asset "windows-x64" "windows-x86_64-nsis" "ndbHwp-windows-x64.exe" "*.exe"
+          copy_updater_asset "windows-x64" "windows-x86_64" "ndbHwp-windows-x64.msi" "*.msi"
+          copy_updater_asset "linux-x64" "linux-x86_64-appimage" "ndbHwp-linux-x64.AppImage.tar.gz" "*.AppImage.tar.gz"
+          copy_updater_asset "linux-x64" "linux-x86_64" "ndbHwp-linux-x64.AppImage.tar.gz" "*.AppImage.tar.gz"
 
 
 
