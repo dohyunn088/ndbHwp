@@ -1,5 +1,5 @@
 [package]
-name = "hop-desktop"
+name = "ndbHwp"
 version = "0.2.0"
 edition = "2021"
 description = "ndbHwp - Open HWP desktop app"
@@ -10,7 +10,7 @@ name = "hop_desktop"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [[bin]]
-name = "hop-desktop"
+name = "ndbHwp"
 path = "src/main.rs"
 
 [build-dependencies]
@@ -38,3 +38,14 @@ pdf-writer = "0.12"
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "NSDocumentController"] }
 objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSURL"] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true

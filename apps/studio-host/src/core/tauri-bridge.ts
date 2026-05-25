@@ -91,6 +91,7 @@ export interface DesktopBridgeApi {
   hasUnsavedChanges(): boolean;
   markDocumentDirty(): void;
   confirmWindowClose(): Promise<boolean>;
+  createDesktopShortcut(): Promise<string>;
 }
 
 export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
@@ -263,6 +264,10 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
     const canClose = await this.confirmReadyForDocumentReplacement();
     if (canClose) await this.releaseCurrentNativeDocument();
     return canClose;
+  }
+
+  async createDesktopShortcut(): Promise<string> {
+    return this.invoke<string>('create_desktop_shortcut');
   }
 
   private async invoke<T>(command: string, args: Record<string, unknown> = {}): Promise<T> {

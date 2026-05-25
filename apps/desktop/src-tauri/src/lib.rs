@@ -1,5 +1,6 @@
 mod app_quit;
 mod commands;
+mod desktop_shortcut;
 mod font_catalog;
 #[cfg(target_os = "linux")]
 mod linux_runtime;
@@ -32,6 +33,7 @@ use commands::{
     record_recent_document, render_document_preview, render_page_svg, reveal_in_folder,
     take_pending_open_paths,
 };
+use desktop_shortcut::create_desktop_shortcut;
 use state::AppState;
 use updates::{get_update_state, restart_to_apply_update, start_update_install};
 
@@ -109,6 +111,7 @@ pub fn run() {
             get_update_state,
             start_update_install,
             restart_to_apply_update,
+            create_desktop_shortcut,
         ])
         .build(tauri::generate_context!())
         .expect("failed to build HOP desktop app");

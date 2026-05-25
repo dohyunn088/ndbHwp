@@ -90,7 +90,7 @@ pnpm run test:studio
 pnpm run test:desktop
 pnpm run clippy:desktop
 pnpm run build:studio
-pnpm --filter hop-desktop tauri build --debug --bundles app
+pnpm --filter ndb-hwp-desktop tauri build --debug --bundles app
 ```
 
 For risky release, packaging, or cross-platform changes, identify which macOS, Windows, and Linux checks are needed before shipping.

@@ -3,7 +3,7 @@ import { parsePreviewSvg } from '@/ui/preview-svg';
 
 type HomeScreenBridge = Partial<Pick<
   DesktopBridgeApi,
-  'listRecentDocuments' | 'openDocumentByPath' | 'renderDocumentPreview'
+  'listRecentDocuments' | 'openDocumentByPath' | 'renderDocumentPreview' | 'createDesktopShortcut'
 >>;
 const RECENT_DOCUMENTS_PER_PAGE = 5;
 
@@ -79,6 +79,7 @@ export class HomeScreen {
       this.createActionButton('새 문서', '빈 HWP 문서 만들기', () => {
         this.actions.createNewDocument();
       }),
+      this.createShortcutButton(),
     );
     hero.append(title, subtitle, actions);
     return hero;
@@ -140,6 +141,48 @@ export class HomeScreen {
     button.append(title, subtitle);
     button.addEventListener('click', action);
     return button;
+  }
+
+  private createShortcutButton(): HTMLButtonElement {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'home-action home-action--shortcut';
+    button.id = 'home-create-desktop-shortcut';
+    const title = document.createElement('span');
+    title.className = 'home-action-title';
+    title.textContent = '바탕화면 바로가기';
+    const subtitle = document.createElement('span');
+    subtitle.className = 'home-action-description';
+    subtitle.textContent = '바탕화면에 ndbHwp 바로가기 만들기';
+    button.append(title, subtitle);
+    button.addEventListener('click', () => {
+      void this.handleCreateDesktopShortcut(button, subtitle);
+    });
+    return button;
+  }
+
+  private async handleCreateDesktopShortcut(
+    button: HTMLButtonElement,
+    statusEl: HTMLElement,
+  ): Promise<void> {
+    if (!this.bridge.createDesktopShortcut) {
+      statusEl.textContent = '이 플랫폼에서는 지원하지 않습니다.';
+      return;
+    }
+    button.disabled = true;
+    statusEl.textContent = '생성 중...';
+    try {
+      await this.bridge.createDesktopShortcut();
+      statusEl.textContent = '바탕화면에 바로가기가 만들어졌습니다!';
+      setTimeout(() => {
+        statusEl.textContent = '바탕화면에 ndbHwp 바로가기 만들기';
+        button.disabled = false;
+      }, 3000);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      statusEl.textContent = `실패: ${msg}`;
+      button.disabled = false;
+    }
   }
 
   private async loadRecentDocuments(): Promise<RecentDocument[]> {
