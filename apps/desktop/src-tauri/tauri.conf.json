@@ -41,6 +41,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "resources": [
+      "icons/doc_hwp.ico"
+    ],
     "fileAssociations": [
       {
         "ext": [
@@ -64,7 +67,8 @@
         "template": "windows/main.wxs"
       },
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "currentUser",
+        "installerHooks": "windows/installer-hooks.nsh"
       }
     }
   },
