@@ -35,11 +35,20 @@ describe('table command overrides', () => {
     const setCellProperties = vi.fn();
     const getCellInfo = vi.fn((sec, ppi, ci, idx) => ({ row: idx, col: 0, rowSpan: 1, colSpan: 1 }));
     const getTableDimensions = vi.fn(() => ({ cellCount: 2 }));
+    const getCellProperties = vi.fn(() => ({
+      fillType: 'none',
+      fillColor: '#ffffff',
+      borderLeft: { type: 1, width: 1, color: '#000000' },
+      borderRight: { type: 1, width: 1, color: '#000000' },
+      borderTop: { type: 1, width: 1, color: '#000000' },
+      borderBottom: { type: 1, width: 1, color: '#000000' }
+    }));
 
     const wasm = {
       setCellProperties,
       getCellInfo,
       getTableDimensions,
+      getCellProperties,
     };
 
     const executeOperation = vi.fn((desc) => {
@@ -71,7 +80,16 @@ describe('table command overrides', () => {
 
     expect(getTableDimensions).toHaveBeenCalledWith(1, 2, 3);
     // idx 0 is inside selection (row: 0, col: 0), so it should be styled
-    expect(setCellProperties).toHaveBeenCalledWith(1, 2, 3, 0, { fillType: 'solid', fillColor: '#ff0000' });
+    expect(setCellProperties).toHaveBeenCalledWith(1, 2, 3, 0, {
+      fillType: 'solid',
+      fillColor: '#ff0000',
+      patternColor: '#000000',
+      patternType: 0,
+      borderLeft: { type: 1, width: 1, color: '#000000' },
+      borderRight: { type: 1, width: 1, color: '#000000' },
+      borderTop: { type: 1, width: 1, color: '#000000' },
+      borderBottom: { type: 1, width: 1, color: '#000000' }
+    });
     // idx 1 is outside selection (row: 1, col: 0), so it should NOT be styled
     expect(setCellProperties).not.toHaveBeenCalledWith(1, 2, 3, 1, expect.any(Object));
   });
@@ -81,10 +99,22 @@ describe('table command overrides', () => {
     const getCellInfo = vi.fn((sec, ppi, ci, idx) => ({ row: idx, col: 0, rowSpan: 1, colSpan: 1 }));
     const getTableDimensions = vi.fn(() => ({ cellCount: 2 }));
 
+    const getCellProperties = vi.fn(() => ({
+      fillType: 'solid',
+      fillColor: '#ff0000',
+      patternColor: '#000000',
+      patternType: 0,
+      borderLeft: { type: 0, width: 0, color: '#000000' },
+      borderRight: { type: 0, width: 0, color: '#000000' },
+      borderTop: { type: 0, width: 0, color: '#000000' },
+      borderBottom: { type: 0, width: 0, color: '#000000' }
+    }));
+
     const wasm = {
       setCellProperties,
       getCellInfo,
       getTableDimensions,
+      getCellProperties,
     };
 
     const executeOperation = vi.fn((desc) => {
@@ -115,12 +145,20 @@ describe('table command overrides', () => {
     );
 
     expect(setCellProperties).toHaveBeenCalledWith(1, 2, 3, 0, {
+      fillType: 'solid',
+      fillColor: '#ff0000',
+      patternColor: '#000000',
+      patternType: 0,
       borderLeft: { type: 1, width: 2, color: '#0000ff' },
       borderRight: { type: 1, width: 2, color: '#0000ff' },
       borderTop: { type: 1, width: 2, color: '#0000ff' },
       borderBottom: { type: 1, width: 2, color: '#0000ff' },
     });
     expect(setCellProperties).toHaveBeenCalledWith(1, 2, 3, 1, {
+      fillType: 'solid',
+      fillColor: '#ff0000',
+      patternColor: '#000000',
+      patternType: 0,
       borderLeft: { type: 1, width: 2, color: '#0000ff' },
       borderRight: { type: 1, width: 2, color: '#0000ff' },
       borderTop: { type: 1, width: 2, color: '#0000ff' },

@@ -38,14 +38,17 @@ const hopTableCommands: CommandDef[] = [
             const inside = cellInfo.row >= range.startRow && cellInfo.row <= range.endRow &&
                            cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
             if (inside) {
-              const newProps: any = {};
+              const props = wasm.getCellProperties(sec, ppi, ci, i);
+              
               if (color === 'none' || !color) {
-                newProps.fillType = 'none';
+                props.fillType = 'none';
               } else {
-                newProps.fillType = 'solid';
-                newProps.fillColor = color;
+                props.fillType = 'solid';
+                props.fillColor = color;
+                props.patternColor = '#000000';
+                props.patternType = 0;
               }
-              wasm.setCellProperties(sec, ppi, ci, i, newProps);
+              wasm.setCellProperties(sec, ppi, ci, i, props);
             }
           }
           return ih.getCursorPosition();
@@ -82,7 +85,7 @@ const hopTableCommands: CommandDef[] = [
                            cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
             if (!inside) continue;
 
-            const newProps: any = {};
+            const props = wasm.getCellProperties(sec, ppi, ci, i);
             const borderVal = { type, width, color };
 
             // Determine boundary cells
@@ -91,54 +94,57 @@ const hopTableCommands: CommandDef[] = [
             const isTopEdge = cellInfo.row === range.startRow;
             const isBottomEdge = cellInfo.row + cellInfo.rowSpan - 1 === range.endRow;
 
+            let changed = false;
             switch (direction) {
               case 'all':
-                newProps.borderLeft = borderVal;
-                newProps.borderRight = borderVal;
-                newProps.borderTop = borderVal;
-                newProps.borderBottom = borderVal;
+                props.borderLeft = borderVal;
+                props.borderRight = borderVal;
+                props.borderTop = borderVal;
+                props.borderBottom = borderVal;
+                changed = true;
                 break;
 
               case 'none':
-                newProps.borderLeft = { type: 0, width: 0, color: '#000000' };
-                newProps.borderRight = { type: 0, width: 0, color: '#000000' };
-                newProps.borderTop = { type: 0, width: 0, color: '#000000' };
-                newProps.borderBottom = { type: 0, width: 0, color: '#000000' };
+                props.borderLeft = { type: 0, width: 0, color: '#000000' };
+                props.borderRight = { type: 0, width: 0, color: '#000000' };
+                props.borderTop = { type: 0, width: 0, color: '#000000' };
+                props.borderBottom = { type: 0, width: 0, color: '#000000' };
+                changed = true;
                 break;
 
               case 'outside':
-                if (isLeftEdge) newProps.borderLeft = borderVal;
-                if (isRightEdge) newProps.borderRight = borderVal;
-                if (isTopEdge) newProps.borderTop = borderVal;
-                if (isBottomEdge) newProps.borderBottom = borderVal;
+                if (isLeftEdge) { props.borderLeft = borderVal; changed = true; }
+                if (isRightEdge) { props.borderRight = borderVal; changed = true; }
+                if (isTopEdge) { props.borderTop = borderVal; changed = true; }
+                if (isBottomEdge) { props.borderBottom = borderVal; changed = true; }
                 break;
 
               case 'inside':
-                if (!isLeftEdge) newProps.borderLeft = borderVal;
-                if (!isRightEdge) newProps.borderRight = borderVal;
-                if (!isTopEdge) newProps.borderTop = borderVal;
-                if (!isBottomEdge) newProps.borderBottom = borderVal;
+                if (!isLeftEdge) { props.borderLeft = borderVal; changed = true; }
+                if (!isRightEdge) { props.borderRight = borderVal; changed = true; }
+                if (!isTopEdge) { props.borderTop = borderVal; changed = true; }
+                if (!isBottomEdge) { props.borderBottom = borderVal; changed = true; }
                 break;
 
               case 'left':
-                if (isLeftEdge) newProps.borderLeft = borderVal;
+                if (isLeftEdge) { props.borderLeft = borderVal; changed = true; }
                 break;
 
               case 'right':
-                if (isRightEdge) newProps.borderRight = borderVal;
+                if (isRightEdge) { props.borderRight = borderVal; changed = true; }
                 break;
 
               case 'top':
-                if (isTopEdge) newProps.borderTop = borderVal;
+                if (isTopEdge) { props.borderTop = borderVal; changed = true; }
                 break;
 
               case 'bottom':
-                if (isBottomEdge) newProps.borderBottom = borderVal;
+                if (isBottomEdge) { props.borderBottom = borderVal; changed = true; }
                 break;
             }
 
-            if (Object.keys(newProps).length > 0) {
-              wasm.setCellProperties(sec, ppi, ci, i, newProps);
+            if (changed) {
+              wasm.setCellProperties(sec, ppi, ci, i, props);
             }
           }
           return ih.getCursorPosition();
