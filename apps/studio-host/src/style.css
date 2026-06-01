@@ -32,33 +32,61 @@
    ================================================================ */
 #sb-table-style-group {
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 #sb-table-style-group .sb-combo {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 #sb-table-style-group .custom-select[data-select-id="sb-border-type"] {
-  width: 75px !important;
+  width: 90px !important;
 }
 
 #sb-table-style-group .custom-select[data-select-id="sb-border-width"] {
-  width: 70px !important;
+  width: 80px !important;
 }
 
 #sb-table-style-group .custom-select .custom-select-trigger {
-  font-size: 11px;
-  padding: 0 4px;
+  font-size: 13px;
+  padding: 0 8px;
+  height: 28px;
+  line-height: 28px;
 }
 
 #btn-cell-bg, #btn-border-color {
   flex-direction: column;
-  padding: 1px;
+  padding: 2px 4px;
+  height: 28px;
+  justify-content: center;
+}
+
+#sb-table-style-group .sb-btn {
+  height: 28px;
+  min-width: 28px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#sb-table-style-group .sb-btn .sb-ga {
+  font-size: 15px !important; /* Force enlarge the icon characters */
+  line-height: 1;
 }
 
 #btn-cell-bg-none .sb-ga {
   color: #ff3b30;
   font-weight: bold;
+}
+
+#sb-table-style-group .sb-color-wrap {
+  display: inline-block;
+  position: relative;
+}
+
+#cell-bg-bar, #border-color-bar {
+  height: 4px !important;
+  width: 18px !important;
 }
 

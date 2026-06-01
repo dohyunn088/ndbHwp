@@ -380,7 +380,7 @@ export class InputHandler {
     // Toolbar에서 서식 적용 요청 수신 (글꼴명, 크기, 색상 — 커맨드 시스템 미경유)
     eventBus.on('format-char', (props) => {
       if (!this.active) return;
-      if (this.cursor.hasSelection()) {
+      if (this.cursor.hasSelection() || this.cursor.isInCellSelectionMode()) {
         this.applyCharFormat(props as Partial<CharProperties>);
       }
       // 서식바 조작으로 빠진 포커스를 항상 복원
@@ -1290,6 +1290,37 @@ export class InputHandler {
 
   /** 선택 범위에 글자 서식을 적용한다 */
   private applyCharFormat(props: Partial<CharProperties>): void {
+    if (this.cursor.isInCellSelectionMode()) {
+      const range = this.getSelectedCellRange();
+      const tableCtx = this.getCellTableContext();
+      if (!range || !tableCtx) return;
+
+      this.executeOperation({
+        kind: 'snapshot',
+        operationType: 'applyCellCharFormat',
+        operation: (wasm) => {
+          const { sec, ppi, ci } = tableCtx;
+          const dims = wasm.getTableDimensions(sec, ppi, ci);
+          const propsJson = JSON.stringify(props);
+          
+          for (let i = 0; i < dims.cellCount; i++) {
+            const cellInfo = wasm.getCellInfo(sec, ppi, ci, i);
+            const inside = cellInfo.row >= range.startRow && cellInfo.row <= range.endRow &&
+                           cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
+            if (inside) {
+              const paraCount = wasm.getCellParagraphCount(sec, ppi, ci, i);
+              for (let p = 0; p < paraCount; p++) {
+                const len = wasm.getCellParagraphLength(sec, ppi, ci, i, p);
+                wasm.applyCharFormatInCell(sec, ppi, ci, i, p, 0, len, propsJson);
+              }
+            }
+          }
+          return this.getCursorPosition();
+        }
+      });
+      return;
+    }
+
     const sel = this.cursor.getSelectionOrdered();
     if (!sel) return;
     const cmd = new ApplyCharFormatCommand(sel.start, sel.end, props);
@@ -1298,7 +1329,7 @@ export class InputHandler {
 
   /** 토글 서식 적용 (상호 배타 처리 포함) */
   private applyToggleFormat(prop: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'emboss' | 'engrave' | 'outline' | 'superscript' | 'subscript'): void {
-    if (!this.cursor.hasSelection()) return;
+    if (!this.cursor.hasSelection() && !this.cursor.isInCellSelectionMode()) return;
     const current = this.getCharPropertiesAtCursor();
 
     if (prop === 'emboss') {
@@ -2516,7 +2547,7 @@ export class InputHandler {
 
   /** 글꼴 크기 증감 (커맨드 시스템용, delta: HWPUNIT, 1pt=100) */
   adjustFontSize(delta: number): void {
-    if (!this.cursor.hasSelection()) return;
+    if (!this.cursor.hasSelection() && !this.cursor.isInCellSelectionMode()) return;
     const current = this.getCharPropertiesAtCursor();
     const newSize = Math.max(100, (current.fontSize ?? 1000) + delta); // 최소 1pt
     this.applyCharFormat({ fontSize: newSize });
