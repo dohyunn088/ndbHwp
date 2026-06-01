@@ -2582,7 +2582,7 @@ dependencies = [
 
 [[package]]
 name = "ndbHwp"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "objc2-app-kit",
  "objc2-foundation",
