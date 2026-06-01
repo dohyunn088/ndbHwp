@@ -967,16 +967,14 @@ export class InputHandler {
     this.isCellDragging = false;
     this.dragStartCell = null;
 
-    if (this.cursor.isInCell() && !this.cursor.isInTextBox()) {
-      const pos = this.cursor.getPosition();
-      if (pos.parentParaIndex !== undefined && pos.controlIndex !== undefined && pos.cellIndex !== undefined) {
-        this.dragStartCell = {
-          sec: pos.sectionIndex,
-          ppi: pos.parentParaIndex,
-          ci: pos.controlIndex,
-          cellIndex: pos.cellIndex,
-        };
-      }
+    const hit = this.hitTestFromEvent(e);
+    if (hit && hit.parentParaIndex !== undefined && hit.controlIndex !== undefined && hit.cellIndex !== undefined && !hit.isTextBox) {
+      this.dragStartCell = {
+        sec: hit.sectionIndex,
+        ppi: hit.parentParaIndex,
+        ci: hit.controlIndex,
+        cellIndex: hit.cellIndex,
+      };
     }
 
     document.addEventListener('mousemove', this.onMouseMoveBound);
@@ -991,7 +989,7 @@ export class InputHandler {
 
   /** 마지막 포인터 좌표 기준으로 드래그 선택 focus를 갱신한다. */
   private updateTextSelectionDragFromPointer(): void {
-    if (!this.isDragging) return;
+    if (!this.isDragging && !this.isCellDragging) return;
 
     const hit = this.hitTestFromClientPoint(this.dragLastClientX, this.dragLastClientY);
     if (hit && hit.paragraphIndex < 0xFFFFFF00) {
@@ -1003,7 +1001,7 @@ export class InputHandler {
 
         if (inSameTable && hit.cellIndex !== undefined && hit.cellIndex !== this.dragStartCell.cellIndex) {
           // 셀 드래그 모드로 전환!
-          this.stopTextSelectionDrag();
+          this.isDragging = false;
           this.isCellDragging = true;
           this.enterOrAdvanceCellSelectionMode();
         }

@@ -1343,6 +1343,7 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
   if (this.isCellDragging) {
     this.isCellDragging = false;
     this.dragStartCell = null;
+    document.removeEventListener('mousemove', this.onMouseMoveBound);
     if (this.dragRafId) {
       cancelAnimationFrame(this.dragRafId);
       this.dragRafId = 0;
