@@ -929,6 +929,19 @@ export function onContextMenu(this: any, e: MouseEvent): void {
 }
 
 export function onMouseMove(this: any, e: MouseEvent): void {
+  // 셀 드래그 중인 경우
+  if (this.isCellDragging) {
+    this.dragLastClientX = e.clientX;
+    this.dragLastClientY = e.clientY;
+    if (this.dragRafId) return;
+    this.dragRafId = requestAnimationFrame(() => {
+      this.dragRafId = 0;
+      if (!this.isCellDragging) return;
+      this.updateTextSelectionDragFromPointer();
+    });
+    return;
+  }
+
   // 연결선 드로잉 모드: 연결점 오버레이 + 프리뷰
   if (this.connectorDrawingMode) {
     const sc = this.container.querySelector('#scroll-content');
@@ -1326,6 +1339,17 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
 }
 
 export function onMouseUp(this: any, _e: MouseEvent): void {
+  // 셀 드래그 종료
+  if (this.isCellDragging) {
+    this.isCellDragging = false;
+    this.dragStartCell = null;
+    if (this.dragRafId) {
+      cancelAnimationFrame(this.dragRafId);
+      this.dragRafId = 0;
+    }
+    return;
+  }
+
   // 그림 배치 모드 마우스업 → 삽입 실행
   if (this.imagePlacementMode && this.imagePlacementDrag && this.imagePlacementData) {
     this.finishImagePlacement(_e);

@@ -61,6 +61,8 @@ export class InputHandler {
 
   // 마우스 드래그 선택 상태
   private isDragging = false;
+  private isCellDragging = false;
+  private dragStartCell: { sec: number; ppi: number; ci: number; cellIndex: number } | null = null;
   private dragRafId = 0; // requestAnimationFrame throttle용
   private dragAutoScrollRafId = 0;
   private dragLastClientX = 0;
@@ -962,6 +964,21 @@ export class InputHandler {
     this.isDragging = true;
     this.dragLastClientX = e.clientX;
     this.dragLastClientY = e.clientY;
+    this.isCellDragging = false;
+    this.dragStartCell = null;
+
+    if (this.cursor.isInCell() && !this.cursor.isInTextBox()) {
+      const pos = this.cursor.getPosition();
+      if (pos.parentParaIndex !== undefined && pos.controlIndex !== undefined && pos.cellIndex !== undefined) {
+        this.dragStartCell = {
+          sec: pos.sectionIndex,
+          ppi: pos.parentParaIndex,
+          ci: pos.controlIndex,
+          cellIndex: pos.cellIndex,
+        };
+      }
+    }
+
     document.addEventListener('mousemove', this.onMouseMoveBound);
   }
 
@@ -978,8 +995,37 @@ export class InputHandler {
 
     const hit = this.hitTestFromClientPoint(this.dragLastClientX, this.dragLastClientY);
     if (hit && hit.paragraphIndex < 0xFFFFFF00) {
-      this.cursor.moveTo(hit);
-      this.updateCaretDuringDrag();
+      if (this.dragStartCell && !this.isCellDragging) {
+        const inSameTable = hit.parentParaIndex !== undefined &&
+          !hit.isTextBox &&
+          hit.parentParaIndex === this.dragStartCell.ppi &&
+          hit.controlIndex === this.dragStartCell.ci;
+
+        if (inSameTable && hit.cellIndex !== undefined && hit.cellIndex !== this.dragStartCell.cellIndex) {
+          // 셀 드래그 모드로 전환!
+          this.stopTextSelectionDrag();
+          this.isCellDragging = true;
+          this.enterOrAdvanceCellSelectionMode();
+        }
+      }
+
+      if (this.isCellDragging) {
+        if (this.dragStartCell && hit.parentParaIndex === this.dragStartCell.ppi && hit.controlIndex === this.dragStartCell.ci && hit.cellIndex !== undefined) {
+          try {
+            const ctx = this.cursor.getCellTableContext();
+            if (ctx) {
+              const info = this.wasm.getCellInfo(ctx.sec, ctx.ppi, ctx.ci, hit.cellIndex);
+              this.cursor.shiftSelectCell(info.row, info.col);
+              this.updateCellSelection();
+            }
+          } catch (err) {
+            console.warn('[InputHandler] 셀 드래그 범위 갱신 실패:', err);
+          }
+        }
+      } else {
+        this.cursor.moveTo(hit);
+        this.updateCaretDuringDrag();
+      }
     }
   }
 
