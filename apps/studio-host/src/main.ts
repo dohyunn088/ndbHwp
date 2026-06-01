@@ -558,12 +558,9 @@ async function initializeDocument(
       if (sourceFormat === 'hwpx') {
         const report = wasm.getValidationWarnings();
         if (report.count > 0) {
-          const choice = await showValidationModalIfNeeded(report);
-          if (choice === 'auto-fix') {
-            const reflowedCount = wasm.reflowLinesegs();
-            canvasView?.loadDocument();
-            msg.textContent = `${displayName} (비표준 lineseg ${reflowedCount}건 자동 보정됨)`;
-          }
+          const reflowedCount = wasm.reflowLinesegs();
+          canvasView?.loadDocument();
+          msg.textContent = `${displayName} (비표준 lineseg ${reflowedCount}건 자동 보정됨)`;
         }
       }
     } catch (error) {
