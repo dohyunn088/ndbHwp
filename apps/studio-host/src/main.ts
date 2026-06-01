@@ -427,6 +427,22 @@ function setupZoomControls(): void {
     }
   });
 
+  // 줌 슬라이더 연결
+  const zoomSlider = document.getElementById('sb-zoom-slider') as HTMLInputElement | null;
+  if (zoomSlider) {
+    zoomSlider.addEventListener('input', () => {
+      vm.setZoom(Number(zoomSlider.value) / 100);
+      // 문서 미로드 시에도 표시 업데이트
+      const pct = Math.round(Number(zoomSlider.value));
+      sbZoomVal().textContent = `${pct}%`;
+    });
+  }
+
+  // 기본 줌을 140%로 설정 (초기 표시도 업데이트)
+  vm.setZoom(1.4);
+  sbZoomVal().textContent = '140%';
+  if (zoomSlider) zoomSlider.value = '140';
+
   document.addEventListener('keydown', (e) => {
     if (!e.ctrlKey && !e.metaKey) return;
     if (e.key === '=' || e.key === '+') {
@@ -468,7 +484,10 @@ function setupEventListeners(): void {
   });
 
   eventBus.on('zoom-level-display', (zoom) => {
-    sbZoomVal().textContent = `${Math.round((zoom as number) * 100)}%`;
+    const pct = Math.round((zoom as number) * 100);
+    sbZoomVal().textContent = `${pct}%`;
+    const slider = document.getElementById('sb-zoom-slider') as HTMLInputElement | null;
+    if (slider) slider.value = String(pct);
   });
 
   // 삽입/수정 모드 토글

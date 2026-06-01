@@ -8,6 +8,7 @@ import type { FontSet } from '@/core/user-settings';
 import { getLocalFonts } from '@/core/local-fonts';
 import { sanitizeAuthoringFontFamily } from '@/core/font-authoring-policy';
 import { getCustomSelectRoot, syncCustomSelect } from './custom-select';
+import { ColorPickerDropdown } from './color-picker';
 
 /** 서식 도구 모음 (style-bar) 컨트롤러 */
 export class Toolbar {
@@ -333,96 +334,35 @@ export class Toolbar {
 
   /** 글자색 피커 이벤트 */
   private setupColorPicker(): void {
-    this.btnTextColor.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      this.colorPicker.click();
-    });
-
-    this.colorPicker.addEventListener('input', () => {
-      const color = this.colorPicker.value;
-      this.colorBar.style.background = color;
-      this.eventBus.emit('format-char', { textColor: color } as CharProperties);
+    new ColorPickerDropdown(this.btnTextColor, this.colorPicker, {
+      onSelect: (color) => {
+        this.colorBar.style.background = color;
+        this.eventBus.emit('format-char', { textColor: color } as CharProperties);
+      }
     });
   }
 
   /** 형광펜 팔레트 설정 */
   private setupHighlightPicker(): void {
-    // 한컴 형광펜 색상 팔레트 (7열 × 5행 + 하단 액션)
-    const PALETTE = [
-      ['#ff0000', '#ff8000', '#ffff00', '#80ff00', '#00ff00', '#00ff80', '#00ffff'],
-      ['#0080ff', '#0000ff', '#8000ff', '#ff00ff', '#ff0080', '#c0c0c0', '#808080'],
-      ['#ff9999', '#ffcc99', '#ffff99', '#ccff99', '#99ff99', '#99ffcc', '#99ffff'],
-      ['#99ccff', '#9999ff', '#cc99ff', '#ff99ff', '#ff99cc', '#e0e0e0', '#404040'],
-      ['#cc0000', '#cc6600', '#cccc00', '#66cc00', '#00cc00', '#00cc66', '#00cccc'],
-      ['#0066cc', '#0000cc', '#6600cc', '#cc00cc', '#cc0066', '#999999', '#000000'],
-    ];
-
-    const palette = this.container.querySelector('#highlight-palette')!;
-
-    // "색 없음" + "다른 색..." 액션 행
-    const actRow = document.createElement('div');
-    actRow.className = 'sb-hl-palette-actions';
-    const btnNone = document.createElement('button');
-    btnNone.textContent = '색 없음';
-    btnNone.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      this.highlightColor = '#ffffff';
-      this.highlightBar.style.background = '#ffffff';
-      this.eventBus.emit('format-char', { shadeColor: '#ffffff' } as CharProperties);
-      this.highlightDropdown.classList.remove('open');
-    });
-    const btnOther = document.createElement('button');
-    btnOther.textContent = '다른 색...';
     const hiddenPicker = document.createElement('input');
     hiddenPicker.type = 'color';
     hiddenPicker.value = this.highlightColor;
-    hiddenPicker.style.cssText = 'position:absolute;width:0;height:0;opacity:0;';
-    btnOther.appendChild(hiddenPicker);
-    btnOther.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      hiddenPicker.click();
-    });
-    hiddenPicker.addEventListener('input', () => {
-      this.highlightColor = hiddenPicker.value;
-      this.highlightBar.style.background = this.highlightColor;
-      this.eventBus.emit('format-char', { shadeColor: this.highlightColor } as CharProperties);
-      this.highlightDropdown.classList.remove('open');
-    });
-    actRow.appendChild(btnNone);
-    actRow.appendChild(btnOther);
-    palette.appendChild(actRow);
+    hiddenPicker.style.cssText = 'position:absolute;width:0;height:0;opacity:0;pointer-events:none;';
+    this.highlightDropdown.appendChild(hiddenPicker);
 
-    // 색상 스워치 행들
-    for (const row of PALETTE) {
-      const rowEl = document.createElement('div');
-      rowEl.className = 'sb-hl-palette-row';
-      for (const color of row) {
-        const swatch = document.createElement('div');
-        swatch.className = 'sb-hl-swatch';
-        swatch.style.background = color;
-        swatch.addEventListener('mousedown', (e) => {
-          e.preventDefault();
+    new ColorPickerDropdown(this.btnHighlight, hiddenPicker, {
+      hasNone: true,
+      noneLabel: '색 없음',
+      onSelect: (color) => {
+        if (color === 'transparent') {
+          this.highlightColor = '#ffffff';
+          this.highlightBar.style.background = '#ffffff';
+          this.eventBus.emit('format-char', { shadeColor: '#ffffff' } as CharProperties);
+        } else {
           this.highlightColor = color;
           this.highlightBar.style.background = color;
           this.eventBus.emit('format-char', { shadeColor: color } as CharProperties);
-          this.highlightDropdown.classList.remove('open');
-        });
-        rowEl.appendChild(swatch);
-      }
-      palette.appendChild(rowEl);
-    }
-
-    // 버튼 클릭 → 팔레트 토글
-    this.btnHighlight.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.highlightDropdown.classList.toggle('open');
-    });
-
-    // 외부 클릭 시 닫기
-    document.addEventListener('mousedown', (e) => {
-      if (!this.highlightDropdown.contains(e.target as Node)) {
-        this.highlightDropdown.classList.remove('open');
+        }
       }
     });
   }
@@ -773,17 +713,19 @@ export class Toolbar {
   }
 
   private setupTableControls(): void {
-    // 셀 배경색 선택 버튼 클릭 시 숨겨진 컬러 피커 클릭 유도
-    this.cellBgBtn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      this.cellBgPicker.click();
-    });
-
-    // 셀 배경색 변경 시 커맨드 디스패치
-    this.cellBgPicker.addEventListener('input', () => {
-      const color = this.cellBgPicker.value;
-      this.cellBgBar.style.background = color;
-      this.dispatcher.dispatch('table:apply-cell-bg', { color });
+    // 셀 배경색 고급 피커 바인딩
+    new ColorPickerDropdown(this.cellBgBtn, this.cellBgPicker, {
+      hasNone: true,
+      noneLabel: '채우기 없음',
+      onSelect: (color) => {
+        if (color === 'transparent') {
+          this.cellBgBar.style.background = '#ffffff';
+          this.dispatcher.dispatch('table:apply-cell-bg', { color: 'none' });
+        } else {
+          this.cellBgBar.style.background = color;
+          this.dispatcher.dispatch('table:apply-cell-bg', { color });
+        }
+      }
     });
 
     // 채우기 없음 버튼 클릭 시 채우기 제거
@@ -793,16 +735,11 @@ export class Toolbar {
       this.dispatcher.dispatch('table:apply-cell-bg', { color: 'none' });
     });
 
-    // 테두리 색상 버튼 클릭 시 숨겨진 컬러 피커 클릭 유도
-    this.borderColorBtn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      this.borderColorPicker.click();
-    });
-
-    // 테두리 색상 변경 시 색상 표시 바 업데이트
-    this.borderColorPicker.addEventListener('input', () => {
-      const color = this.borderColorPicker.value;
-      this.borderColorBar.style.background = color;
+    // 테두리 색상 고급 피커 바인딩
+    new ColorPickerDropdown(this.borderColorBtn, this.borderColorPicker, {
+      onSelect: (color) => {
+        this.borderColorBar.style.background = color;
+      }
     });
 
     // 테두리 적용 위치 버튼 클릭 이벤트 바인딩

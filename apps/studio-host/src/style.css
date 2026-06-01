@@ -28,6 +28,85 @@
 @import '@/styles/responsive.css';
 
 /* ================================================================
+   아이콘 툴바 아이콘/글자 크기 확대 (Toolbar Icon & Label Size Overrides)
+   ================================================================ */
+#icon-toolbar {
+  height: 68px;
+}
+
+#icon-toolbar .tb-sprite {
+  width: 24px;
+  height: 24px;
+}
+
+#icon-toolbar .tb-icon-text {
+  width: 24px;
+  height: 24px;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+#icon-toolbar .icon-ctrl-mark::before,
+#icon-toolbar .icon-para-mark::before {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+}
+
+#icon-toolbar .tb-label {
+  font-size: 12px;
+  color: var(--color-text); /* #333 — 기본값 #555(secondary)보다 진하게 */
+}
+
+#icon-toolbar .tb-btn {
+  min-width: 50px;
+}
+
+/* ================================================================
+   하단 줌 슬라이더 (Status-bar Zoom Slider)
+   ================================================================ */
+.stb-zoom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  background: #c0c0c0;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  margin: 0 4px;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.stb-zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6182d6;
+  cursor: pointer;
+  border: 1px solid #335095;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: background 0.15s ease;
+}
+
+.stb-zoom-slider::-webkit-slider-thumb:hover {
+  background: #4a6dc0;
+}
+
+.stb-zoom-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6182d6;
+  cursor: pointer;
+  border: 1px solid #335095;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+/* ================================================================
    표 빠른 서식 스타일 (Table Quick Formatting Styles)
    ================================================================ */
 #sb-table-style-group {
@@ -49,22 +128,21 @@
 
 #sb-table-style-group .custom-select .custom-select-trigger {
   font-size: 13px;
-  padding: 0 8px;
-  height: 28px;
-  line-height: 28px;
+  padding: 0 6px;
+  height: 22px !important;
+  line-height: 20px !important;
 }
 
 #btn-cell-bg, #btn-border-color {
   flex-direction: column;
-  padding: 2px 4px;
-  height: 28px;
+  padding: 1px 2px;
   justify-content: center;
 }
 
 #sb-table-style-group .sb-btn {
-  height: 28px;
-  min-width: 28px;
-  padding: 0 4px;
+  height: 24px !important;
+  min-width: 24px !important;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -86,7 +164,122 @@
 }
 
 #cell-bg-bar, #border-color-bar {
-  height: 4px !important;
-  width: 18px !important;
+  height: 3px !important;
+  width: 16px !important;
+}
+
+/* ================================================================
+   고급 HWP 스타일 컬러 피커 (Premium HWP Color Picker)
+   ================================================================ */
+.hwp-color-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 15000;
+  background: #f7f9fc;
+  border: 1px solid #aab3c4;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+  padding: 6px;
+  width: 210px;
+  user-select: none;
+  margin-top: 2px;
+}
+
+.hwp-color-dropdown.open {
+  display: block;
+}
+
+.hwp-color-section-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: #4b5563;
+  padding: 2px 2px 4px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 4px;
+}
+
+.hwp-theme-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.hwp-color-row {
+  display: flex;
+  gap: 2px;
+}
+
+.hwp-color-row.base-row {
+  margin-bottom: 2px;
+  border-bottom: 1px dashed #d1d5db;
+  padding-bottom: 2px;
+}
+
+.hwp-color-row.standard-row {
+  margin-bottom: 4px;
+}
+
+.hwp-color-swatch {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.hwp-color-swatch:hover {
+  transform: scale(1.15);
+  border-color: #2563eb;
+  box-shadow: 0 0 4px rgba(37, 99, 235, 0.4);
+  z-index: 2;
+}
+
+.hwp-color-swatch.selected {
+  outline: 2px solid #ef4444;
+  outline-offset: -1px;
+  border-color: transparent;
+  z-index: 3;
+}
+
+.hwp-color-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 6px 0;
+}
+
+.hwp-color-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.hwp-color-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 24px;
+  font-size: 11px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #374151;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.hwp-color-action-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+.hwp-color-action-btn .action-icon {
+  font-size: 12px;
 }
 
