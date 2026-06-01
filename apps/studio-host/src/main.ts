@@ -558,13 +558,16 @@ async function initializeDocument(
       if (sourceFormat === 'hwpx') {
         const report = wasm.getValidationWarnings();
         if (report.count > 0) {
-          // 보정(reflow)을 돌리면 레이아웃이 어긋나거나 빈 페이지가 밀리는 부작용이 크므로, 
-          // 팝업 없이 원본 그대로("그대로 보기") 깨끗하게 렌더링하여 가장 안전한 레이아웃 상태를 보장합니다.
-          console.info(`[validation] 비표준 lineseg ${report.count}건 감지됨 - 원본 레이아웃 그대로 보기 모드로 안전하게 렌더링합니다.`);
+          // 비표준 lineseg 감지 시 자동 보정(reflow)을 실행하여 레이아웃을 올바르게 렌더링합니다.
+          const n = wasm.reflowLinesegs();
+          console.info(`[validation] 비표준 lineseg ${report.count}건 감지됨 - ${n}개 문단 자동 보정 완료.`);
+          // reflow 후 캔버스 재렌더링
+          canvasView?.loadDocument();
+          msg.textContent = `${displayName} (비표준 lineseg ${n}건 자동 보정됨)`;
         }
       }
     } catch (error) {
-      console.warn('[validation] 감지 실패 (치명적이지 않음):', error);
+      console.warn('[validation] 감지/보정 실패 (치명적이지 않음):', error);
     }
   } catch (error) {
     console.error('[initDoc] 오류:', error);
