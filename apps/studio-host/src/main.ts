@@ -114,6 +114,7 @@ function currentSourceFormat(): DocumentSourceFormat {
 
 async function initialize(): Promise<void> {
   const msg = sbMessage();
+  setupCustomTooltips();
   try {
     const tauriRuntime = isTauriRuntime();
     desktopPlatform = await hydrateDesktopPlatform();
@@ -650,5 +651,100 @@ eventBus.on('desktop-status', (message) => {
 eventBus.on('equation-edit-request', () => {
   dispatcher.dispatch('insert:equation-edit');
 });
+
+function setupCustomTooltips(): void {
+  const tooltip = document.createElement('div');
+  tooltip.id = 'custom-tooltip';
+  tooltip.className = 'custom-tooltip';
+  document.body.appendChild(tooltip);
+
+  let activeElement: HTMLElement | null = null;
+
+  function showTooltip(el: HTMLElement): void {
+    const text = el.getAttribute('data-tooltip') || el.getAttribute('title');
+    if (!text) return;
+
+    if (!el.getAttribute('data-tooltip')) {
+      el.setAttribute('data-tooltip', text);
+      el.removeAttribute('title');
+    }
+
+    let title = '';
+    let desc = '';
+    let shortcut = '';
+
+    const shortcutMatch = text.match(/\(([^)]+)\)$/);
+    let baseText = text;
+    if (shortcutMatch) {
+      shortcut = shortcutMatch[1];
+      baseText = text.substring(0, shortcutMatch.index).trim();
+    }
+
+    const dashIndex = baseText.indexOf(' - ');
+    if (dashIndex !== -1) {
+      title = baseText.substring(0, dashIndex).trim();
+      desc = baseText.substring(dashIndex + 3).trim();
+    } else {
+      title = baseText;
+    }
+
+    let html = `<div class="ct-header"><span class="ct-title">${title}</span>`;
+    if (shortcut) {
+      html += `<span class="ct-shortcut">${shortcut}</span>`;
+    }
+    html += `</div>`;
+    if (desc) {
+      html += `<div class="ct-desc">${desc}</div>`;
+    }
+
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+
+    // 강제 리플로우를 발생시켜 레이아웃을 계산
+    tooltip.offsetWidth;
+
+    const rect = el.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    let left = rect.left + (rect.width - tooltipRect.width) / 2;
+    let top = rect.bottom + 8;
+
+    if (left < 8) left = 8;
+    if (left + tooltipRect.width > window.innerWidth - 8) {
+      left = window.innerWidth - tooltipRect.width - 8;
+    }
+    if (top + tooltipRect.height > window.innerHeight - 8) {
+      top = rect.top - tooltipRect.height - 8;
+    }
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+  }
+
+  function hideTooltip(): void {
+    tooltip.classList.remove('visible');
+  }
+
+  document.addEventListener('mouseover', (e) => {
+    const target = e.target as HTMLElement;
+    const el = target.closest('[title], [data-tooltip]');
+    if (el && el instanceof HTMLElement) {
+      activeElement = el;
+      showTooltip(el);
+    }
+  }, true);
+
+  document.addEventListener('mouseout', (e) => {
+    const target = e.target as HTMLElement;
+    const el = target.closest('[data-tooltip]');
+    if (el && el === activeElement) {
+      hideTooltip();
+      activeElement = null;
+    }
+  }, true);
+
+  document.addEventListener('mousedown', () => {
+    hideTooltip();
+  });
+}
 
 initialize();
