@@ -172,17 +172,18 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
     if (!this.sourcePath) {
       return this.saveDocumentAsFromCommand();
     }
-    if (this.sourceFormat === 'hwpx') {
-      throw new Error('HWPX 원본 저장은 아직 안전하게 지원하지 않습니다. 다른 이름으로 저장에서 HWP 파일로 저장하세요.');
-    }
     return this.saveHwpThroughStaging(docId, null);
   }
 
   async saveDocumentAsFromCommand(): Promise<DesktopSaveResult | null> {
     const docId = this.ensureDocumentLoaded();
-    const targetPath = await this.selectSavePath(this.suggestedHwpName(), 'HWP 문서', ['hwp']);
+    const suggestedName = this.sourceFormat === 'hwpx' ? this.suggestedHwpxName() : this.suggestedHwpName();
+    const targetPath = await this.selectSavePath(suggestedName, 'HWP/HWPX 문서', ['hwp', 'hwpx']);
     if (!targetPath) return null;
-    return this.saveHwpThroughStaging(docId, this.withExtension(targetPath, 'hwp'));
+    const isHwpx = /\.hwpx$/i.test(targetPath);
+    const finalFormat = isHwpx ? 'hwpx' : 'hwp';
+    const finalPath = isHwpx ? this.withExtension(targetPath, 'hwpx') : this.withExtension(targetPath, 'hwp');
+    return this.saveHwpThroughStaging(docId, finalPath, finalFormat);
   }
 
   async exportPdfFromCommand(): Promise<string | null> {
@@ -194,7 +195,7 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
       targetPath: finalPath,
     });
     try {
-      await this.writeCurrentHwpToPath(stagedPath);
+      await this.writeCurrentDocumentToPath(stagedPath, this.sourceFormat);
       return await this.invoke<string>('export_pdf_from_hwp_path', {
         stagedPath,
         targetPath: finalPath,
@@ -325,16 +326,19 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
   private async saveHwpThroughStaging(
     docId: string,
     targetPath: string | null,
+    overrideFormat?: DocumentFormat,
   ): Promise<DesktopSaveResult | null> {
     const finalPath = targetPath ?? this.sourcePath;
     if (!finalPath) throw new Error('새 문서는 저장 경로가 필요합니다');
+
+    const format = overrideFormat ?? this.sourceFormat;
 
     const allowExternalOverwrite = await this.confirmExternalOverwriteIfNeeded(docId, finalPath);
     if (allowExternalOverwrite === null) return null;
 
     const stagedPath = await this.invoke<string>('prepare_staged_hwp_save', { targetPath: finalPath });
     try {
-      await this.writeCurrentHwpToPath(stagedPath);
+      await this.writeCurrentDocumentToPath(stagedPath, format);
       const result = await this.invoke<DesktopSaveResult>('commit_staged_hwp_save', {
         docId,
         stagedPath,
@@ -402,9 +406,6 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
   }
 
   private async saveCurrentDocumentForSafety(): Promise<DesktopSaveResult | null> {
-    if (this.sourceFormat === 'hwpx') {
-      return this.saveDocumentAsFromCommand();
-    }
     return this.saveDocumentFromCommand();
   }
 
@@ -439,8 +440,9 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
     });
   }
 
-  private async writeCurrentHwpToPath(path: string): Promise<void> {
-    await writeFileInChunks(path, super.exportHwp());
+  private async writeCurrentDocumentToPath(path: string, format: DocumentFormat): Promise<void> {
+    const bytes = format === 'hwpx' ? super.exportHwpx() : super.exportHwp();
+    await writeFileInChunks(path, bytes);
   }
 
   private withExtension(path: string, extension: string): string {
@@ -519,6 +521,11 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
   private suggestedHwpName(): string {
     const name = this.fileName.replace(/\.(hwp|hwpx)$/i, '') || 'document';
     return `${name}.hwp`;
+  }
+
+  private suggestedHwpxName(): string {
+    const name = this.fileName.replace(/\.(hwp|hwpx)$/i, '') || 'document';
+    return `${name}.hwpx`;
   }
 
   private suggestedPdfName(): string {

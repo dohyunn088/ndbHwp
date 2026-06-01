@@ -35,6 +35,7 @@ vi.mock('@/core/wasm-bridge', () => ({
     }));
     createNewDocumentMock = vi.fn(() => ({ pageCount: 1, fontsUsed: [] }));
     exportHwpMock = vi.fn(() => new Uint8Array([1, 2, 3]));
+    exportHwpxMock = vi.fn(() => new Uint8Array([4, 5, 6]));
     sourceFormat = 'hwp';
 
     loadDocument(bytes: Uint8Array, fileName: string) {
@@ -48,6 +49,10 @@ vi.mock('@/core/wasm-bridge', () => ({
 
     exportHwp() {
       return this.exportHwpMock();
+    }
+
+    exportHwpx() {
+      return this.exportHwpxMock();
     }
 
     getSourceFormat() {
@@ -338,20 +343,65 @@ describe('TauriBridge', () => {
     expect(invokeMock).toHaveBeenNthCalledWith(2, 'clear_recent_documents', {});
   });
 
-  it('blocks direct save for HWPX sources', async () => {
+  it('saves HWPX bytes through native state with extension and revision guards', async () => {
     const bridge = new TauriBridge();
+    const handle = writeHandle();
+    fsOpenMock.mockResolvedValue(handle);
     applyOpenResult(bridge, {
       docId: 'doc-1',
       fileName: 'source.hwpx',
       sourcePath: '/tmp/source.hwpx',
       format: 'hwpx',
       pageCount: 1,
-      revision: 1,
-      dirty: false,
+      revision: 5,
+      dirty: true,
       warnings: [],
     });
+    saveMock.mockResolvedValue('/tmp/report.hwpx');
+    getWasmMock(bridge, 'exportHwpxMock').mockReturnValue(new Uint8Array([7, 8, 9]));
+    invokeMock.mockImplementation(async (command: string, args: Record<string, unknown>) => {
+      if (command === 'prepare_staged_hwp_save') {
+        expect(args).toEqual({ targetPath: '/tmp/report.hwpx' });
+        return '/tmp/report.hwpx.hop-save-1234abcd.tmp';
+      }
+      if (command === 'check_external_modification') {
+        expect(args).toEqual({ docId: 'doc-1', targetPath: '/tmp/report.hwpx' });
+        return { changed: false };
+      }
+      if (command === 'commit_staged_hwp_save') {
+        expect(args).toEqual({
+          docId: 'doc-1',
+          stagedPath: '/tmp/report.hwpx.hop-save-1234abcd.tmp',
+          targetPath: '/tmp/report.hwpx',
+          expectedRevision: 5,
+          allowExternalOverwrite: false,
+        });
+        return {
+          docId: 'doc-1',
+          sourcePath: '/tmp/report.hwpx',
+          format: 'hwpx',
+          revision: 6,
+          dirty: false,
+          warnings: [],
+        };
+      }
+      throw new Error(`unexpected command ${command}`);
+    });
 
-    await expect(bridge.saveDocumentFromCommand()).rejects.toThrow('HWPX 원본 저장은 아직 안전하게 지원하지 않습니다');
+    const result = await bridge.saveDocumentAsFromCommand();
+
+    expect(fsOpenMock).toHaveBeenCalledWith('/tmp/report.hwpx.hop-save-1234abcd.tmp', {
+      write: true,
+      create: true,
+      truncate: true,
+    });
+    expect(handle.write).toHaveBeenCalledWith(new Uint8Array([7, 8, 9]));
+    expect(handle.close).toHaveBeenCalled();
+    expect(result?.sourcePath).toBe('/tmp/report.hwpx');
+    expect(result?.format).toBe('hwpx');
+    expect(result?.revision).toBe(6);
+    expect(bridge.hasUnsavedChanges()).toBe(false);
+    expect(document.title).toBe('report.hwpx - ndbHwp');
   });
 
   it('saves HWP bytes through native state with extension and revision guards', async () => {
@@ -670,6 +720,9 @@ function nativeOpenResult(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function getWasmMock(bridge: TauriBridge, name: 'loadDocumentMock' | 'createNewDocumentMock' | 'exportHwpMock') {
+function getWasmMock(
+  bridge: TauriBridge,
+  name: 'loadDocumentMock' | 'createNewDocumentMock' | 'exportHwpMock' | 'exportHwpxMock',
+) {
   return (bridge as unknown as Record<typeof name, ReturnType<typeof vi.fn>>)[name];
 }

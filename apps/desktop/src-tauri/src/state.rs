@@ -199,13 +199,7 @@ impl DocumentSessionManager {
         if !allow_external_overwrite {
             session.check_external_modification_for_path(&target_path)?;
         }
-        let format = DocumentFormat::from_path(&target_path)?;
-        if format == DocumentFormat::Hwpx {
-            return Err(
-                "HWPX 경로에는 HWP 바이트를 저장할 수 없습니다. .hwp 파일로 저장하세요."
-                    .to_string(),
-            );
-        }
+        let _format = DocumentFormat::from_path(&target_path)?;
         let bytes = std::fs::read(&staged_path).map_err(|e| {
             format!(
                 "staging 파일을 읽을 수 없습니다: {} ({})",
@@ -575,8 +569,8 @@ impl DocumentSession {
             self.page_count = core.page_count();
             self.core = Some(core);
         }
-        self.source_path = Some(target_path);
-        self.source_format = DocumentFormat::Hwp;
+        self.source_path = Some(target_path.clone());
+        self.source_format = DocumentFormat::from_path(&target_path)?;
         self.refresh_source_fingerprint_from_bytes(bytes)?;
         self.revision += 1;
         self.dirty = false;
@@ -1014,27 +1008,49 @@ mod tests {
     }
 
     #[test]
-    fn commit_staged_hwp_save_rejects_hwpx_target_before_reading_staged_bytes() {
+    fn commit_staged_hwp_save_accepts_hwpx_target() {
         let mut manager = DocumentSessionManager::default();
         let opened = manager.create_document().unwrap();
         let dir = tempfile::tempdir().unwrap();
         let staged_path = dir.path().join("save.tmp");
         let target_path = dir.path().join("saved.hwpx");
 
-        std::fs::write(&staged_path, b"not a hwp document").unwrap();
+        let bytes = manager
+            .session(&opened.doc_id)
+            .unwrap()
+            .core
+            .as_ref()
+            .unwrap()
+            .export_hwp_native()
+            .unwrap();
+        std::fs::write(&staged_path, &bytes).unwrap();
 
-        let error = manager
+        let result = manager
             .commit_staged_hwp_save(
                 &opened.doc_id,
                 staged_path.clone(),
-                target_path,
+                target_path.clone(),
                 Some(opened.revision),
                 false,
             )
-            .unwrap_err();
+            .unwrap();
 
-        assert!(error.contains("HWPX 경로에는 HWP 바이트를 저장할 수 없습니다"));
-        assert!(staged_path.exists());
+        assert_eq!(
+            result.source_path.as_deref(),
+            Some(target_path.to_string_lossy().as_ref())
+        );
+        assert_eq!(result.format, DocumentFormat::Hwpx);
+        assert_eq!(std::fs::read(&target_path).unwrap(), bytes);
+        assert!(!staged_path.exists());
+        assert_eq!(
+            manager.session(&opened.doc_id).unwrap().revision,
+            opened.revision + 1
+        );
+        assert_eq!(
+            manager.session(&opened.doc_id).unwrap().source_format,
+            DocumentFormat::Hwpx
+        );
+        assert!(!manager.session(&opened.doc_id).unwrap().dirty);
     }
 
     #[test]

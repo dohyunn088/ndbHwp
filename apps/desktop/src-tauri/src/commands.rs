@@ -354,12 +354,7 @@ fn ensure_document_open_path(path: &Path) -> Result<(), String> {
 
 fn ensure_hwp_target_path(path: &Path) -> Result<(), String> {
     ensure_target_parent(path, "저장 경로")?;
-    let format = DocumentFormat::from_path(path)?;
-    if format == DocumentFormat::Hwpx {
-        return Err(
-            "HWPX 경로에는 HWP 바이트를 저장할 수 없습니다. .hwp 파일로 저장하세요.".to_string(),
-        );
-    }
+    let _format = DocumentFormat::from_path(path)?;
     Ok(())
 }
 
@@ -503,12 +498,12 @@ mod tests {
     }
 
     #[test]
-    fn ensure_hwp_target_path_rejects_invalid_parent_and_hwpx() {
+    fn ensure_hwp_target_path_rejects_invalid_parent_and_accepts_hwpx() {
         let dir = tempfile::tempdir().unwrap();
         let missing_parent = dir.path().join("missing").join("saved.hwp");
 
         assert!(ensure_hwp_target_path(&missing_parent).is_err());
-        assert!(ensure_hwp_target_path(&dir.path().join("saved.hwpx")).is_err());
+        assert!(ensure_hwp_target_path(&dir.path().join("saved.hwpx")).is_ok());
     }
 
     #[test]
