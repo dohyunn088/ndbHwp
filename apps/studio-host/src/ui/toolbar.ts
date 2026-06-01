@@ -37,6 +37,19 @@ export class Toolbar {
   private fontLang: HTMLSelectElement;
   private fontApplyRequestId = 0;
 
+  // 표 빠른 서식 멤버 변수
+  private tableStyleGroup: HTMLElement;
+  private tableSep: HTMLElement;
+  private cellBgBtn: HTMLButtonElement;
+  private cellBgPicker: HTMLInputElement;
+  private cellBgBar: HTMLElement;
+  private cellBgNoneBtn: HTMLButtonElement;
+  private borderTypeSelect: HTMLSelectElement;
+  private borderWidthSelect: HTMLSelectElement;
+  private borderColorBtn: HTMLButtonElement;
+  private borderColorPicker: HTMLInputElement;
+  private borderColorBar: HTMLElement;
+
   private enabled = false;
   private styleDropdownInitialized = false;
   /** 마지막으로 받은 fontFamilies (언어별 7개 배열) */
@@ -72,6 +85,19 @@ export class Toolbar {
     this.btnLsDown = container.querySelector('#btn-ls-down')!;
     this.fontLang = container.querySelector('#font-lang')!;
 
+    // 표 빠른 서식 바인딩
+    this.tableStyleGroup = container.querySelector('#sb-table-style-group')!;
+    this.tableSep = container.querySelector('.sb-table-sep')!;
+    this.cellBgBtn = container.querySelector('#btn-cell-bg')!;
+    this.cellBgPicker = container.querySelector('#cell-bg-picker')!;
+    this.cellBgBar = container.querySelector('#cell-bg-bar')!;
+    this.cellBgNoneBtn = container.querySelector('#btn-cell-bg-none')!;
+    this.borderTypeSelect = container.querySelector('#sb-border-type')!;
+    this.borderWidthSelect = container.querySelector('#sb-border-width')!;
+    this.borderColorBtn = container.querySelector('#btn-border-color')!;
+    this.borderColorPicker = container.querySelector('#border-color-picker')!;
+    this.borderColorBar = container.querySelector('#border-color-bar')!;
+
     this.setupFormatButtons();
     this.setupCharfxDropdown();
     this.setupLineSpacingDropdown();
@@ -81,6 +107,7 @@ export class Toolbar {
     this.setupAlignButtons();
     this.setupBulletPopup();
     this.setupStyleDropdown();
+    this.setupTableControls();
 
     eventBus.on('cursor-format-changed', (props) => {
       this.updateState(props as CharProperties);
@@ -92,6 +119,10 @@ export class Toolbar {
 
     eventBus.on('cursor-style-changed', (info) => {
       this.updateStyleState(info as { id: number; name: string });
+    });
+
+    eventBus.on('cursor-cell-changed', (info) => {
+      this.updateTableCellStyleState(info as { inCell: boolean });
     });
   }
 
@@ -739,5 +770,76 @@ export class Toolbar {
       ids.push(this.wasm.findOrCreateFontIdForLang(i, fontName));
     }
     this.eventBus.emit('format-char', { fontIds: ids } as CharProperties);
+  }
+
+  private setupTableControls(): void {
+    // 셀 배경색 선택 버튼 클릭 시 숨겨진 컬러 피커 클릭 유도
+    this.cellBgBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      this.cellBgPicker.click();
+    });
+
+    // 셀 배경색 변경 시 커맨드 디스패치
+    this.cellBgPicker.addEventListener('input', () => {
+      const color = this.cellBgPicker.value;
+      this.cellBgBar.style.background = color;
+      this.dispatcher.dispatch('table:apply-cell-bg', { color });
+    });
+
+    // 채우기 없음 버튼 클릭 시 채우기 제거
+    this.cellBgNoneBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      this.cellBgBar.style.background = '#ffffff';
+      this.dispatcher.dispatch('table:apply-cell-bg', { color: 'none' });
+    });
+
+    // 테두리 색상 버튼 클릭 시 숨겨진 컬러 피커 클릭 유도
+    this.borderColorBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      this.borderColorPicker.click();
+    });
+
+    // 테두리 색상 변경 시 색상 표시 바 업데이트
+    this.borderColorPicker.addEventListener('input', () => {
+      const color = this.borderColorPicker.value;
+      this.borderColorBar.style.background = color;
+    });
+
+    // 테두리 적용 위치 버튼 클릭 이벤트 바인딩
+    const borderDirs: [string, string][] = [
+      ['#btn-border-all', 'all'],
+      ['#btn-border-outside', 'outside'],
+      ['#btn-border-inside', 'inside'],
+      ['#btn-border-left', 'left'],
+      ['#btn-border-right', 'right'],
+      ['#btn-border-top', 'top'],
+      ['#btn-border-bottom', 'bottom'],
+      ['#btn-border-none', 'none'],
+    ];
+
+    for (const [selector, dir] of borderDirs) {
+      const btn = this.tableStyleGroup.querySelector(selector) as HTMLButtonElement;
+      if (btn) {
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          this.dispatcher.dispatch('table:apply-cell-borders', {
+            direction: dir,
+            type: parseInt(this.borderTypeSelect.value, 10),
+            width: parseInt(this.borderWidthSelect.value, 10),
+            color: this.borderColorPicker.value,
+          });
+        });
+      }
+    }
+  }
+
+  private updateTableCellStyleState(info: { inCell: boolean }): void {
+    if (info.inCell) {
+      this.tableStyleGroup.style.display = 'inline-flex';
+      this.tableSep.style.display = 'inline-block';
+    } else {
+      this.tableStyleGroup.style.display = 'none';
+      this.tableSep.style.display = 'none';
+    }
   }
 }

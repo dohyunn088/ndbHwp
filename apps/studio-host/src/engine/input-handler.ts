@@ -1012,8 +1012,9 @@ export class InputHandler {
           try {
             const ctx = this.cursor.getCellTableContext();
             if (ctx) {
-              const info = this.wasm.getCellInfo(ctx.sec, ctx.ppi, ctx.ci, hit.cellIndex);
-              this.cursor.shiftSelectCell(info.row, info.col);
+              const range = expandCellSelectionToSpanning(this.wasm, ctx, this.dragStartCell.cellIndex, hit.cellIndex);
+              (this.cursor as any).cellAnchor = { row: range.startRow, col: range.startCol };
+              (this.cursor as any).cellFocus = { row: range.endRow, col: range.endCol };
               this.updateCellSelection();
             }
           } catch (err) {
@@ -2938,4 +2939,72 @@ export class InputHandler {
       input.select();
     });
   }
+}
+
+/**
+ * 선택된 두 셀(anchor, focus)을 포함하여, 범위 내에 있는 모든 셀의 rowSpan/colSpan 병합 상태가
+ * 온전한 직사각형(Spanning range)을 이루도록 범위를 자동 확장하여 계산한다.
+ */
+function expandCellSelectionToSpanning(
+  wasm: any,
+  ctx: { sec: number; ppi: number; ci: number; cellPath?: any },
+  anchorCellIndex: number,
+  focusCellIndex: number,
+): { startRow: number; startCol: number; endRow: number; endCol: number } {
+  let bboxes: any[];
+  try {
+    if (ctx.cellPath && ctx.cellPath.length > 1) {
+      bboxes = wasm.getTableCellBboxesByPath(ctx.sec, ctx.ppi, JSON.stringify(ctx.cellPath));
+    } else {
+      bboxes = wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
+    }
+  } catch {
+    return { startRow: 0, startCol: 0, endRow: 0, endCol: 0 };
+  }
+
+  const anchorBbox = bboxes.find(b => b.cellIdx === anchorCellIndex);
+  const focusBbox = bboxes.find(b => b.cellIdx === focusCellIndex);
+  if (!anchorBbox || !focusBbox) {
+    return { startRow: 0, startCol: 0, endRow: 0, endCol: 0 };
+  }
+
+  let startRow = Math.min(anchorBbox.row, focusBbox.row);
+  let startCol = Math.min(anchorBbox.col, focusBbox.col);
+  let endRow = Math.max(anchorBbox.row + anchorBbox.rowSpan - 1, focusBbox.row + focusBbox.rowSpan - 1);
+  let endCol = Math.max(anchorBbox.col + anchorBbox.colSpan - 1, focusBbox.col + focusBbox.colSpan - 1);
+
+  let changed = true;
+  let safetyCounter = 0;
+  while (changed && safetyCounter < 100) {
+    changed = false;
+    safetyCounter++;
+    for (const b of bboxes) {
+      const cellStartRow = b.row;
+      const cellStartCol = b.col;
+      const cellEndRow = b.row + b.rowSpan - 1;
+      const cellEndCol = b.col + b.colSpan - 1;
+
+      const intersects =
+        cellStartRow <= endRow && cellEndRow >= startRow &&
+        cellStartCol <= endCol && cellEndCol >= startCol;
+
+      if (intersects) {
+        const nextStartRow = Math.min(startRow, cellStartRow);
+        const nextStartCol = Math.min(startCol, cellStartCol);
+        const nextEndRow = Math.max(endRow, cellEndRow);
+        const nextEndCol = Math.max(endCol, cellEndCol);
+
+        if (nextStartRow !== startRow || nextStartCol !== startCol ||
+            nextEndRow !== endRow || nextEndCol !== endCol) {
+          startRow = nextStartRow;
+          startCol = nextStartCol;
+          endRow = nextEndRow;
+          endCol = nextEndCol;
+          changed = true;
+        }
+      }
+    }
+  }
+
+  return { startRow, startCol, endRow, endCol };
 }

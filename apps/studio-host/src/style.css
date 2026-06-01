@@ -26,3 +26,39 @@
 @import '@/styles/update-notice.css';
 @import '@/styles/recent-documents-dialog.css';
 @import '@/styles/responsive.css';
+
+/* ================================================================
+   표 빠른 서식 스타일 (Table Quick Formatting Styles)
+   ================================================================ */
+#sb-table-style-group {
+  align-items: center;
+  gap: 2px;
+}
+
+#sb-table-style-group .sb-combo {
+  font-size: 11px;
+}
+
+#sb-table-style-group .custom-select[data-select-id="sb-border-type"] {
+  width: 75px !important;
+}
+
+#sb-table-style-group .custom-select[data-select-id="sb-border-width"] {
+  width: 70px !important;
+}
+
+#sb-table-style-group .custom-select .custom-select-trigger {
+  font-size: 11px;
+  padding: 0 4px;
+}
+
+#btn-cell-bg, #btn-border-color {
+  flex-direction: column;
+  padding: 1px;
+}
+
+#btn-cell-bg-none .sb-ga {
+  color: #ff3b30;
+  font-weight: bold;
+}
+
