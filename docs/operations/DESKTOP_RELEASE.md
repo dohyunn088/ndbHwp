@@ -1,6 +1,6 @@
-# HOP 데스크톱 배포 빌드
+# ndbHwp 데스크톱 배포 빌드
 
-Tauri 데스크톱 앱은 `apps/desktop/`에서 빌드한다. 배포용 GitHub Actions 워크플로는 `.github/workflows/hop-desktop.yml`이다.
+Tauri 데스크톱 앱은 `apps/desktop/`에서 빌드한다. 배포용 GitHub Actions 워크플로는 `.github/workflows/ndbHwp-desktop.yml`이다.
 
 관련 문서:
 
@@ -8,13 +8,13 @@ Tauri 데스크톱 앱은 `apps/desktop/`에서 빌드한다. 배포용 GitHub A
 
 ## 워크플로 동작
 
-`HOP Desktop Release`는 수동으로만 실행된다.
+`ndbHwp Desktop Release`는 수동으로만 실행된다.
 
 | 트리거 | 빌드 플랫폼 | 릴리즈 |
 | --- | --- | --- |
 | 수동 `workflow_dispatch` | macOS arm64, macOS x64 기본 선택. Windows x64, Linux x64는 필요할 때 선택 | 선택적으로 draft/prerelease 릴리즈 생성 |
 
-Pull Request와 태그 push는 자동 빌드를 실행하지 않는다. 릴리즈 빌드는 GitHub Actions에서 수동으로 실행하고, `build_ref`에 빌드할 branch, tag, commit SHA를 입력한다. `create_release`를 켠 상태에서 `build_ref`를 비워 두면 `release_tag`를 빌드 ref로 사용한다. HOP 데스크톱 릴리즈 태그는 `v*` 네임스페이스를 사용한다.
+Pull Request와 태그 push는 자동 빌드를 실행하지 않는다. 릴리즈 빌드는 GitHub Actions에서 수동으로 실행하고, `build_ref`에 빌드할 branch, tag, commit SHA를 입력한다. `create_release`를 켠 상태에서 `build_ref`를 비워 두면 `release_tag`를 빌드 ref로 사용한다. ndbHwp 데스크톱 릴리즈 태그는 `v*` 네임스페이스를 사용한다.
 
 빌드 대상은 다음과 같다.
 
@@ -35,14 +35,14 @@ Linux x64는 Ubuntu 22.04 ABI baseline을 명시적으로 유지한다. workflow
 
 | 플랫폼 | 릴리즈 asset | 직접 다운로드 URL |
 | --- | --- | --- |
-| macOS Apple Silicon | `HOP-macos-arm64.dmg` | `/releases/latest/download/HOP-macos-arm64.dmg` |
-| macOS Intel | `HOP-macos-x64.dmg` | `/releases/latest/download/HOP-macos-x64.dmg` |
-| Windows x64 | `HOP-windows-x64.msi` | `/releases/latest/download/HOP-windows-x64.msi` |
-| Linux x64 Debian/Ubuntu 계열 | `HOP-linux-x64.deb` | `/releases/latest/download/HOP-linux-x64.deb` |
-| Linux x64 Fedora/openSUSE 계열 | `HOP-linux-x64.rpm` | `/releases/latest/download/HOP-linux-x64.rpm` |
-| Linux x64 portable | `HOP-linux-x64.AppImage` | `/releases/latest/download/HOP-linux-x64.AppImage` |
+| macOS Apple Silicon | `ndbHwp-macos-arm64.dmg` | `/releases/latest/download/ndbHwp-macos-arm64.dmg` |
+| macOS Intel | `ndbHwp-macos-x64.dmg` | `/releases/latest/download/ndbHwp-macos-x64.dmg` |
+| Windows x64 | `ndbHwp-windows-x64.msi` | `/releases/latest/download/ndbHwp-windows-x64.msi` |
+| Linux x64 Debian/Ubuntu 계열 | `ndbHwp-linux-x64.deb` | `/releases/latest/download/ndbHwp-linux-x64.deb` |
+| Linux x64 Fedora/openSUSE 계열 | `ndbHwp-linux-x64.rpm` | `/releases/latest/download/ndbHwp-linux-x64.rpm` |
+| Linux x64 portable | `ndbHwp-linux-x64.AppImage` | `/releases/latest/download/ndbHwp-linux-x64.AppImage` |
 
-현재 공개 다운로드는 macOS signed/notarized 빌드와 Windows MSI를 노출하고, Linux는 `.deb`를 기본 링크로 제공한다. Windows와 Linux는 workflow에서 선택해 빌드할 수 있고, 생성된 경우 고정 이름 asset으로 함께 업로드된다. `HOP-windows-x64.exe`, `HOP-linux-x64.AppImage`, `HOP-linux-x64.rpm`은 만들어진 경우 함께 올린다. `SHA256SUMS.txt`는 고정 이름으로 복사된 릴리즈 asset과 updater asset 기준으로 생성한다.
+현재 공개 다운로드는 macOS signed/notarized 빌드와 Windows MSI를 노출하고, Linux는 `.deb`를 기본 링크로 제공한다. Windows와 Linux는 workflow에서 선택해 빌드할 수 있고, 생성된 경우 고정 이름 asset으로 함께 업로드된다. `ndbHwp-windows-x64.exe`, `ndbHwp-linux-x64.AppImage`, `ndbHwp-linux-x64.rpm`은 만들어진 경우 함께 올린다. `SHA256SUMS.txt`는 고정 이름으로 복사된 릴리즈 asset과 updater asset 기준으로 생성한다.
 
 Linux 공개 안내에는 한글 IME 안정성을 위해 `.deb` 또는 `.rpm` 패키지를 우선 사용하라는 문구를 노출한다. AppImage는 portable 실행이 필요한 사용자를 위한 보조 배포물로 유지하며, 일부 Wayland/IME 환경에서는 한영 전환이 불안정할 수 있음을 함께 안내한다.
 
@@ -51,23 +51,23 @@ Arch 계열 배포판용 native 패키지는 아직 제공하지 않는다. `deb
 자동 업데이트는 GitHub Release의 `latest.json`을 사용한다.
 
 ```text
-https://github.com/golbin/hop/releases/latest/download/latest.json
+https://github.com/golbin/ndbHwp/releases/latest/download/latest.json
 ```
 
-릴리즈 잡은 Tauri updater용 압축 bundle과 `.sig` 파일을 `HOP-updater-*` 또는 설치 파일 이름으로 함께 올리고, `latest.json` 안의 다운로드 URL은 해당 릴리즈 태그의 asset을 가리키게 만든다. manifest에는 `darwin-aarch64-app`, `windows-x86_64-msi`, `linux-x86_64-appimage`처럼 Tauri가 먼저 찾는 installer-specific key와 fallback key를 함께 넣는다. Linux installer-specific key는 각 패키지 형식을 그대로 가리켜야 하며, generic `linux-x86_64` fallback은 Linux 기본 다운로드 정책에 맞춰 `.deb`를 가리킨다. AppImage 설치본을 updater로 `.deb`에 자동 전환하는 흐름은 보장하지 않는다. 앱은 시작 시 이 manifest를 확인한다. 업데이트가 있으면 다운로드와 설치를 수행하고, Rust 쪽에서 아직 dirty 문서 세션이 없을 때만 재시작한다.
+릴리즈 잡은 Tauri updater용 압축 bundle과 `.sig` 파일을 `ndbHwp-updater-*` 또는 설치 파일 이름으로 함께 올리고, `latest.json` 안의 다운로드 URL은 해당 릴리즈 태그의 asset을 가리키게 만든다. manifest에는 `darwin-aarch64-app`, `windows-x86_64-msi`, `linux-x86_64-appimage`처럼 Tauri가 먼저 찾는 installer-specific key와 fallback key를 함께 넣는다. Linux installer-specific key는 각 패키지 형식을 그대로 가리켜야 하며, generic `linux-x86_64` fallback은 Linux 기본 다운로드 정책에 맞춰 `.deb`를 가리킨다. AppImage 설치본을 updater로 `.deb`에 자동 전환하는 흐름은 보장하지 않는다. 앱은 시작 시 이 manifest를 확인한다. 업데이트가 있으면 다운로드와 설치를 수행하고, Rust 쪽에서 아직 dirty 문서 세션이 없을 때만 재시작한다.
 
 수동 실행에서 `create_release`를 켜면 macOS arm64와 macOS x64를 모두 빌드해야 한다. README와 홈페이지가 두 macOS `.dmg`에 직접 링크하기 때문이다. macOS 공개 릴리즈가 unsigned로 나가는 일을 막기 위해, macOS release build는 Apple signing certificate와 notarization credential이 없으면 실패한다. 일부 플랫폼만 확인하고 싶을 때는 `create_release`를 끄고 artifact 빌드만 실행한다.
 
 ## 수동 빌드
 
-GitHub Actions에서 `HOP Desktop Release`를 선택한 뒤 `Run workflow`를 실행한다.
+GitHub Actions에서 `ndbHwp Desktop Release`를 선택한 뒤 `Run workflow`를 실행한다.
 
 플랫폼 체크박스로 필요한 OS만 빌드할 수 있다. artifact만 필요하면 `create_release`는 끈 상태로 둔다.
 
 수동 릴리즈를 만들 때는 다음처럼 실행한다.
 
 1. 먼저 로컬에서 `v0.1.0` 같은 태그를 만들고 push한다.
-2. GitHub Actions에서 `HOP Desktop Release`를 선택한다.
+2. GitHub Actions에서 `ndbHwp Desktop Release`를 선택한다.
 3. `create_release`를 켠다.
 4. `release_tag`에 `v0.1.0` 같은 태그를 입력한다.
 5. 필요하면 `build_ref`에도 같은 태그를 입력한다. 비워 두면 `release_tag`를 사용한다.
@@ -105,7 +105,7 @@ git push origin v0.1.0
 3. 인증서를 private key와 함께 `.p12`로 export한다.
 4. App Store Connect에서 notarization용 API key를 만든다.
 5. 아래 GitHub repository secret을 등록한다.
-6. GitHub Actions에서 `HOP Desktop Release`를 수동 실행한다.
+6. GitHub Actions에서 `ndbHwp Desktop Release`를 수동 실행한다.
 
 수동 실행으로 바로 공개 릴리즈를 만들려면 `create_release`를 켜고, `release_draft`를 끈다. 먼저 artifact를 확인하고 싶으면 `release_draft`를 켜 둔 뒤 GitHub Releases 화면에서 직접 publish한다.
 
@@ -155,7 +155,7 @@ macOS release build는 다음 조건을 만족하지 않으면 실패한다.
 
 ### 서명 리스크와 계획
 
-* Background: 홈페이지는 GitHub Release의 `HOP-windows-x64.msi`를 직접 다운로드 링크로 제공한다.
+* Background: 홈페이지는 GitHub Release의 `ndbHwp-windows-x64.msi`를 직접 다운로드 링크로 제공한다.
 * Problem: 서명되지 않은 새 `.msi`는 Edge/Windows SmartScreen에서 "일반적으로 다운로드되지 않습니다"로 차단되거나 실행 전 경고가 뜰 수 있다.
 * Goal: 공개 Windows 설치 파일의 다운로드 차단과 실행 경고를 줄인다.
 * Non-goals: 사용자 브라우저 보안 설정을 우회하거나, 검증되지 않은 설치 파일을 안전하다고 표시하지 않는다.
@@ -168,7 +168,7 @@ macOS release build는 다음 조건을 만족하지 않으면 실패한다.
 
 사용자에게 안내할 수 있는 임시 절차는 다음과 같다. 공개 페이지에서는 1-2단계 중심으로 안내하고, 체크섬 비교는 릴리즈 문서나 고급 사용자 안내에만 둔다.
 
-1. Edge 다운로드 목록에서 차단된 `HOP-windows-x64.msi`의 `...` 메뉴를 연다.
+1. Edge 다운로드 목록에서 차단된 `ndbHwp-windows-x64.msi`의 `...` 메뉴를 연다.
 2. `유지`를 선택한다.
 3. 추가 확인 화면이 나오면 게시자와 파일명을 확인한 뒤 유지한다.
 4. GitHub Releases의 `SHA256SUMS.txt`와 내려받은 파일의 체크섬을 비교한다.
@@ -202,15 +202,15 @@ Azure Trusted Signing을 쓴다면 보통 다음 secret이 필요하다.
 1. keypair를 만든다.
 
 ```bash
-pnpm --filter hop-desktop tauri signer generate -w ~/.tauri/hop.key
+pnpm --filter ndbHwp-desktop tauri signer generate -w ~/.tauri/ndbHwp.key
 ```
 
-현재 `tauri.conf.json`에 들어간 public key는 `~/.tauri/hop.key.pub`에서 나온 값이다. 같은 private key를 계속 사용해야 기존 설치본이 다음 업데이트를 신뢰할 수 있다.
+현재 `tauri.conf.json`에 들어간 public key는 `~/.tauri/ndbHwp.key.pub`에서 나온 값이다. 같은 private key를 계속 사용해야 기존 설치본이 다음 업데이트를 신뢰할 수 있다.
 
 2. private key 내용을 GitHub repository secret `TAURI_SIGNING_PRIVATE_KEY`에 저장한다.
 3. private key 비밀번호를 설정했다면 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`에 저장한다. 비밀번호가 없는 key는 워크플로가 빈 password 환경 변수를 넣어 서명한다.
 4. GitHub Actions에서 `create_release=true`로 릴리즈를 빌드한다.
-5. 릴리즈 asset에 `latest.json`, `HOP-updater-*.sig`, `HOP-updater-*` 파일이 올라갔는지 확인한다.
+5. 릴리즈 asset에 `latest.json`, `ndbHwp-updater-*.sig`, `ndbHwp-updater-*` 파일이 올라갔는지 확인한다.
 
 updater private key는 반드시 백업한다. 이 키를 잃으면 이미 배포된 앱에 신뢰 가능한 업데이트를 보낼 수 없다.
 
@@ -218,6 +218,6 @@ updater private key는 반드시 백업한다. 이 키를 잃으면 이미 배�
 
 ## 메모
 
-`../../loom`의 release workflow는 런타임 리소스 패키징, 엄격한 signing/updater 검증, 별도 release script까지 포함한다. HOP은 현재 그 정도 복잡도가 필요하지 않다.
+`../../loom`의 release workflow는 런타임 리소스 패키징, 엄격한 signing/updater 검증, 별도 release script까지 포함한다. ndbHwp은 현재 그 정도 복잡도가 필요하지 않다.
 
-HOP 워크플로는 플랫폼 matrix를 명시적으로 유지하고, lockfile 기반으로 빌드하며, `tauri-action`은 artifact 생성에만 쓰고, GitHub Release 생성은 별도 write-permission job에서 처리한다.
+ndbHwp 워크플로는 플랫폼 matrix를 명시적으로 유지하고, lockfile 기반으로 빌드하며, `tauri-action`은 artifact 생성에만 쓰고, GitHub Release 생성은 별도 write-permission job에서 처리한다.
