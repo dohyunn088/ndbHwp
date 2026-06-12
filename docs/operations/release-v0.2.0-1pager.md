@@ -1,48 +1,37 @@
-# ndbHwp v0.2.0 Release 1-Pager
+# ndbHwp v0.2.0 릴리즈 계획서 (1-Pager)
 
-## Background
+## 배경 (Background)
 
-ndbHwp v0.1.11 is the latest published desktop release. Since then, `main` has accumulated upstream `rhwp` compatibility work, a recent documents home screen, stale HWPX validation fixes, and desktop platform integration fixes.
+ndbHwp v0.1.11은 가장 최근에 배포된 데스크톱 릴리즈입니다. 그 이후로 `main` 브랜치에는 upstream `rhwp` 호환성 작업, 최근 문서 홈 화면, 오래된 HWPX 검증 수정 사항, 그리고 데스크톱 플랫폼 통합 수정 사항들이 누적되었습니다.
 
-## Problem
+## 문제 (Problem)
 
-The app needs a 0.2.0 release built by GitHub Actions with stable release assets and concise release notes that summarize changes since v0.1.11.
+v0.1.11 이후의 변경 사항들을 요약한 간결한 릴리즈 노트와 안정적인 릴리즈 자산을 포함하여 GitHub Actions를 통해 빌드된 v0.2.0 릴리즈가 필요합니다.
 
-## Goal
+## 목표 (Goal)
 
-- Bump ndbHwp desktop and workspace versions to `0.2.0`.
-- Tag and push the release source as `v0.2.0`.
-- Build release artifacts through the `ndbHwp Desktop Release` GitHub Actions workflow.
-- Publish a non-draft GitHub Release with concise notes based on the v0.1.11 to v0.2.0 delta.
+- ndbHwp 데스크톱 및 워크스페이스 버전을 `0.2.0`으로 올립니다.
+- 릴리즈 소스를 `v0.2.0` 태그로 생성하고 푸시합니다.
+- `ndbHwp Desktop Release` GitHub Actions 워크플로를 통해 릴리즈 빌드 결과물을 생성합니다.
+- v0.1.11에서 v0.2.0 사이의 변경분을 바탕으로 간결한 릴리즈 노트를 포함하는 정식 GitHub Release를 게시합니다.
 
-## Non-goals
+## 비목표 (Non-goals)
 
-- Do not modify `third_party/rhwp` beyond the already committed submodule pointer.
-- Do not rewrite release history or move existing tags.
-- Do not change signing, updater, packaging, or workflow behavior unless verification shows it is required for this release.
+- 이미 커밋된 서브모듈 포인터 외에 `third_party/rhwp`를 수정하지 않습니다.
+- 릴리즈 히스토리를 재작성하거나 기존 태그를 이동하지 않습니다.
+- 검증 과정에서 필수적인 것으로 확인되지 않는 한, 서명, 업데이트 프로그램, 패키징 또는 워크플로 동작을 변경하지 않습니다.
 
-## Constraints
+## 제약 조건 (Constraints)
 
-- Use `pnpm` only.
-- Keep release tag and `apps/desktop/src-tauri/tauri.conf.json` version aligned to avoid updater loops.
-- Preserve stable asset names used by README, website, and updater links.
-- Keep unrelated worktree changes untouched.
+- `pnpm`만 사용합니다.
+- 업데이트 루프를 방지하기 위해 릴리즈 태그와 `apps/desktop/src-tauri/tauri.conf.json` 버전을 일치시킵니다.
+- README, 웹사이트, 업데이트 링크에서 사용하는 안정적인 자산 이름을 유지합니다.
+- 관련 없는 작업 트리의 변경 사항은 그대로 유지합니다.
 
-## Implementation outline
+## 구현 개요 (Implementation outline)
 
-1. Update version metadata from `0.1.11` to `0.2.0` in package, Tauri, and Cargo files.
-2. Run focused local verification before tagging.
-3. Commit the version bump and this release plan.
-4. Push `main`, create/push `v0.2.0`, then dispatch the desktop release workflow with `create_release=true`.
-5. Replace the generated release notes with concise ndbHwp-specific notes after the release is created.
-
-## Verification plan
-
-- `pnpm test`
-- `pnpm run clippy:desktop`
-- GitHub Actions `ndbHwp Desktop Release` result for `v0.2.0`
-- GitHub Release asset and `latest.json` presence after the workflow completes
-
-## Rollback or recovery notes
-
-If the GitHub Actions release build fails, leave any draft or partial release unpublished, fix forward on `main`, and rerun the workflow for the same tag only if the tag already points to the intended release commit. If the pushed tag points to the wrong commit, do not move it without explicit operator approval.
+1. 패키지, Tauri, Cargo 파일들의 버전 메타데이터를 `0.1.11`에서 `0.2.0`으로 업데이트합니다.
+2. 태그 생성 전에 로컬에서 집중 검증을 실행합니다.
+3. 버전 업과 이 릴리즈 계획을 커밋합니다.
+4. `main`을 푸시하고 `v0.2.0`을 생성 및 푸시한 후, `create_release=true` 옵션으로 데스크톱 릴리즈 워크플로를 실행합니다.
+5. 릴리즈가 생성되면 자동 생성된 릴리즈 노트를 ndbHwp 전용의 간결한 릴리즈 노트로 대체합니다.
