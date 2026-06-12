@@ -1,21 +1,12 @@
-MIT License
+MIT 라이선스 (MIT License)
 
 Copyright (c) 2025-2026 Edward Kim
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+본 소프트웨어 및 관련된 문서 파일(이하 "소프트웨어")의 복제본을 취득하는 모든 사람에게, 소프트웨어를 무상으로 제한 없이 다룰 수 있는 권한을 부여합니다. 여기에는 소프트웨어의 복제본을 사용, 복사, 수정, 병합, 게시, 배포, 서브라이선스 부여 및/또는 판매할 수 있는 권한과 소프트웨어를 제공받는 사람에게 아래의 조건에 따라 이를 허용하는 권한이 포함됩니다.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+상기 저작권 고시와 본 허가 고시는 소프트웨어의 모든 복제본 또는 상당 부분에 포함되어야 합니다.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+본 소프트웨어는 어떠한 종류의 보증도 없이 "있는 그대로" 제공되며, 상품성, 특정 목적에의 적합성 및 비침해에 대한 보증을 포함하되 이에 국한되지 않는 묵시적 또는 명시적인 보증을 제공하지 않습니다. 어떠한 경우에도 저작권자나 권리자는 본 소프트웨어 혹은 소프트웨어의 사용 및 기타 거래와 관련하여 발생하는 계약, 불법행위 또는 기타 사유로 인한 어떠한 청구, 손해 또는 기타 책임에 대해서도 책임을 지지 않습니다.
+
+---
+참고: 본 한국어 번역본은 정보 제공 및 이해를 돕기 위한 목적으로만 제공됩니다. 본 소프트웨어의 공식적이고 법적인 라이선스 조건은 영문 원본(MIT License)을 따릅니다.
