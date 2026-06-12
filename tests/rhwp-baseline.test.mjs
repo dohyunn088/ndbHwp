@@ -6,8 +6,8 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-const expectedRhwpVersion = '0.7.11';
-const expectedRhwpCommit = 'a9dcdee32b17a7f9a20c609a5ed547e62fb8ebae';
+const expectedRhwpVersion = '0.7.15';
+const expectedRhwpCommit = 'bc38ff55a7e8acb65aebebe237dca0542480d381';
 
 test('HOP keeps the rhwp renderer baseline aligned across submodule, WASM package, and native lockfile', async () => {
   const studioPackage = JSON.parse(

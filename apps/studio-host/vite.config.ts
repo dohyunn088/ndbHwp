@@ -2,8 +2,12 @@ import { defineConfig, normalizePath } from 'vite';
 import { createRequire } from 'node:module';
 import { basename, dirname, relative, resolve } from 'node:path';
 import { copyFileSync, createReadStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
 import { createHopOverrides } from './hop-overrides';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const require = createRequire(import.meta.url);
 const desktopConfig = JSON.parse(

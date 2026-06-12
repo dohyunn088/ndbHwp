@@ -5,7 +5,7 @@ type HomeScreenBridge = Partial<Pick<
   DesktopBridgeApi,
   'listRecentDocuments' | 'openDocumentByPath' | 'renderDocumentPreview' | 'createDesktopShortcut'
 >>;
-const RECENT_DOCUMENTS_PER_PAGE = 5;
+const RECENT_DOCUMENTS_PER_PAGE = 6;
 
 interface HomeScreenActions {
   openFile(): void;
@@ -197,8 +197,6 @@ export class HomeScreen {
 
   private renderRecentDocuments(documents: RecentDocument[]): void {
     this.recentDocuments = documents;
-    const totalPages = this.totalPages();
-    this.currentPage = totalPages === 0 ? 0 : Math.min(this.currentPage, totalPages - 1);
     this.recentTrack.replaceChildren();
     if (documents.length === 0) {
       this.recentSection.classList.add('is-empty');
@@ -210,13 +208,8 @@ export class HomeScreen {
     this.recentSection.classList.remove('is-empty');
     this.recentHint.textContent = '앱을 실행하자마자 이어서 작업할 수 있도록 최근에 연 문서를 보여줍니다.';
 
-    const pageStart = this.currentPage * RECENT_DOCUMENTS_PER_PAGE;
-    const pageItems = documents.slice(pageStart, pageStart + RECENT_DOCUMENTS_PER_PAGE);
-    for (const documentInfo of pageItems) {
+    for (const documentInfo of documents) {
       this.recentTrack.appendChild(this.createRecentCard(documentInfo));
-    }
-    for (let index = pageItems.length; index < RECENT_DOCUMENTS_PER_PAGE; index += 1) {
-      this.recentTrack.appendChild(this.createPlaceholderCard());
     }
     this.updatePagination();
   }
@@ -321,12 +314,7 @@ export class HomeScreen {
   }
 
   private updatePagination(): void {
-    const totalPages = this.totalPages();
-    const hasPages = totalPages > 1;
-    this.recentPagination.hidden = !hasPages;
-    this.recentPageLabel.textContent = totalPages === 0 ? '' : `${this.currentPage + 1} / ${totalPages}`;
-    this.prevButton.disabled = this.currentPage === 0;
-    this.nextButton.disabled = totalPages === 0 || this.currentPage >= totalPages - 1;
+    this.recentPagination.hidden = true;
   }
 
   private totalPages(): number {

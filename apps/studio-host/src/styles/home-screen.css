@@ -134,14 +134,13 @@
 
 .home-recent-track {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   align-items: stretch;
   justify-content: start;
   width: 100%;
-  max-width: 1772px;
+  max-width: 1056px;
 }
-
 .home-recent.is-empty .home-recent-track {
   display: none;
 }

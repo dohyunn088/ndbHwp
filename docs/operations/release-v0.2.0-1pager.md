@@ -1,8 +1,8 @@
-# HOP v0.2.0 Release 1-Pager
+# ndbHwp v0.2.0 Release 1-Pager
 
 ## Background
 
-HOP v0.1.11 is the latest published desktop release. Since then, `main` has accumulated upstream `rhwp` compatibility work, a recent documents home screen, stale HWPX validation fixes, and desktop platform integration fixes.
+ndbHwp v0.1.11 is the latest published desktop release. Since then, `main` has accumulated upstream `rhwp` compatibility work, a recent documents home screen, stale HWPX validation fixes, and desktop platform integration fixes.
 
 ## Problem
 
@@ -10,9 +10,9 @@ The app needs a 0.2.0 release built by GitHub Actions with stable release assets
 
 ## Goal
 
-- Bump HOP desktop and workspace versions to `0.2.0`.
+- Bump ndbHwp desktop and workspace versions to `0.2.0`.
 - Tag and push the release source as `v0.2.0`.
-- Build release artifacts through the `HOP Desktop Release` GitHub Actions workflow.
+- Build release artifacts through the `ndbHwp Desktop Release` GitHub Actions workflow.
 - Publish a non-draft GitHub Release with concise notes based on the v0.1.11 to v0.2.0 delta.
 
 ## Non-goals
@@ -34,13 +34,13 @@ The app needs a 0.2.0 release built by GitHub Actions with stable release assets
 2. Run focused local verification before tagging.
 3. Commit the version bump and this release plan.
 4. Push `main`, create/push `v0.2.0`, then dispatch the desktop release workflow with `create_release=true`.
-5. Replace the generated release notes with concise HOP-specific notes after the release is created.
+5. Replace the generated release notes with concise ndbHwp-specific notes after the release is created.
 
 ## Verification plan
 
 - `pnpm test`
 - `pnpm run clippy:desktop`
-- GitHub Actions `HOP Desktop Release` result for `v0.2.0`
+- GitHub Actions `ndbHwp Desktop Release` result for `v0.2.0`
 - GitHub Release asset and `latest.json` presence after the workflow completes
 
 ## Rollback or recovery notes

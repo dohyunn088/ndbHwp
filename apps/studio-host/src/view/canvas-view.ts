@@ -156,7 +156,7 @@ export class CanvasView {
     this.scrollContent.appendChild(canvas);
 
     try {
-      this.pageRenderer.renderPage(pageIdx, canvas, renderScale);
+      this.pageRenderer.renderPage(pageIdx, canvas, renderScale, zoom, dpr);
     } catch (e) {
       console.error(`[CanvasView] 페이지 ${pageIdx} 렌더링 실패:`, e);
       this.releasePage(pageIdx);

@@ -35,9 +35,11 @@ import { enhanceCustomSelects } from '@/ui/custom-select';
 import { UpdateNotice, type UpdateNoticeActions } from '@/ui/update-notice';
 import { HomeScreen } from '@/ui/home-screen';
 import type { DesktopBridgeApi } from '@/core/tauri-bridge';
+import { DocumentDirtyState } from '@/core/document-dirty-state';
 
 const wasm = createBridge();
 const eventBus = new EventBus();
+const documentState = new DocumentDirtyState(eventBus);
 let desktopPlatform = detectDesktopPlatform();
 
 type DocumentSourceFormat = 'hwp' | 'hwpx';
@@ -51,6 +53,7 @@ type DirtyAwareBridge = {
 if (import.meta.env.DEV) {
   (window as any).__wasm = wasm;
   (window as any).__eventBus = eventBus;
+  (window as any).__documentState = documentState;
 }
 let canvasView: CanvasView | null = null;
 let inputHandler: InputHandler | null = null;
@@ -77,6 +80,7 @@ function getContext(): EditorContext {
     canRedo: inputHandler?.canRedo() ?? false,
     zoom: canvasView?.getViewportManager().getZoom() ?? 1.0,
     showControlCodes: wasm.getShowControlCodes(),
+    isDirty: documentState.isDirty(),
     sourceFormat: hasDocument ? (wasm.getSourceFormat() as 'hwp' | 'hwpx') : undefined,
   };
 }
@@ -84,6 +88,7 @@ function getContext(): EditorContext {
 const commandServices: CommandServices = {
   eventBus,
   wasm,
+  documentState,
   getContext,
   getInputHandler: () => inputHandler,
   getViewportManager: () => canvasView?.getViewportManager() ?? null,
@@ -462,13 +467,25 @@ function setupZoomControls(): void {
 let totalSections = 1;
 
 function setupEventListeners(): void {
-  eventBus.on('document-changed', () => {
-    const bridge = wasm as DirtyAwareBridge;
-    const wasDirty = bridge.hasUnsavedChanges?.() ?? false;
-    bridge.markDocumentDirty?.();
-    if (!wasDirty && bridge.hasUnsavedChanges?.()) {
-      sbMessage().textContent = '수정됨';
+  eventBus.on('document-mutated', (reason) => {
+    documentState.markDirty(typeof reason === 'string' ? reason : 'document-mutated');
+  });
+
+  eventBus.on('document-changed', (reason) => {
+    documentState.markDirty(typeof reason === 'string' ? reason : 'document-changed');
+  });
+
+  eventBus.on('document-dirty-changed', (payload) => {
+    const p = payload as { dirty: boolean; reason?: string } | undefined;
+    if (p?.dirty) {
+      const bridge = wasm as DirtyAwareBridge;
+      const wasDirty = bridge.hasUnsavedChanges?.() ?? false;
+      bridge.markDocumentDirty?.();
+      if (!wasDirty && bridge.hasUnsavedChanges?.()) {
+        sbMessage().textContent = '수정됨';
+      }
     }
+    eventBus.emit('command-state-changed');
   });
 
   eventBus.on('current-page-changed', (page, _total) => {
@@ -574,6 +591,7 @@ async function initializeDocument(
     toolbar?.initStyleDropdown();
     inputHandler?.activateWithCaretPosition();
 
+    let normalizedDuringLoad = false;
     try {
       if (sourceFormat === 'hwpx') {
         const report = wasm.getValidationWarnings();
@@ -584,10 +602,16 @@ async function initializeDocument(
           // reflow 후 캔버스 재렌더링
           canvasView?.loadDocument();
           msg.textContent = `${displayName} (비표준 lineseg ${n}건 자동 보정됨)`;
+          normalizedDuringLoad = n > 0;
         }
       }
     } catch (error) {
       console.warn('[validation] 감지/보정 실패 (치명적이지 않음):', error);
+    }
+    if (normalizedDuringLoad) {
+      documentState.markDirty('validation-auto-fix');
+    } else {
+      documentState.markClean('document-initialized');
     }
   } catch (error) {
     console.error('[initDoc] 오류:', error);
@@ -642,6 +666,7 @@ eventBus.on('desktop-document-loaded', (payload) => {
 eventBus.on('desktop-document-saved', () => {
   // TauriBridge가 title/dirty 상태를 이미 갱신한다. 상태바만 현재 동작에 맞춘다.
   sbMessage().textContent = '저장 완료';
+  documentState.markClean('desktop-document-saved');
 });
 eventBus.on('desktop-status', (message) => {
   sbMessage().textContent = String(message);

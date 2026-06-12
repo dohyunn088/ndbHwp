@@ -2105,7 +2105,7 @@ export class InputHandler {
   isInPictureObjectSelection(): boolean { return this.cursor.isInPictureObjectSelection(); }
 
   /** 선택된 그림/글상자 참조 반환 */
-  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number } | null { return this.cursor.getSelectedPictureRef(); }
+  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; outerTableControlIdx?: number; cellPath?: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>; noteRef?: any; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null { return this.cursor.getSelectedPictureRef(); }
 
   /** 다중 선택된 개체 목록 */
   getSelectedPictureRefs(): { sec: number; ppi: number; ci: number; type: string }[] { return this.cursor.getSelectedPictureRefs(); }
@@ -2551,6 +2551,24 @@ export class InputHandler {
     const current = this.getCharPropertiesAtCursor();
     const newSize = Math.max(100, (current.fontSize ?? 1000) + delta); // 최소 1pt
     this.applyCharFormat({ fontSize: newSize });
+  }
+
+  /** 장평 증감 (커맨드 시스템용, delta: percent point) */
+  adjustCharRatio(delta: number): void {
+    if (!this.cursor.hasSelection() && !this.cursor.isInCellSelectionMode()) return;
+    const current = this.getCharPropertiesAtCursor();
+    const currentRatio = current.ratios?.[0] ?? 100;
+    const nextRatio = Math.max(50, Math.min(200, Math.round(currentRatio + delta)));
+    this.applyCharFormat({ ratios: Array(7).fill(nextRatio) });
+  }
+
+  /** 자간 증감 (커맨드 시스템용, delta: percent point) */
+  adjustCharSpacing(delta: number): void {
+    if (!this.cursor.hasSelection() && !this.cursor.isInCellSelectionMode()) return;
+    const current = this.getCharPropertiesAtCursor();
+    const currentSpacing = current.spacings?.[0] ?? 0;
+    const nextSpacing = Math.max(-50, Math.min(50, Math.round(currentSpacing + delta)));
+    this.applyCharFormat({ spacings: Array(7).fill(nextSpacing) });
   }
 
   /** 스타일 적용 (커맨드 시스템용) */
