@@ -7,6 +7,7 @@ ndbHwp는 HWP/HWPX 문서를 보고 편집할 수 있는 오픈소스 Windows용
 문서 파싱과 렌더링의 기반은 [rhwp](https://github.com/edwardkim/rhwp)를 사용합니다. ndbHwp는 그 위에 얇게 껍데기를 씌운 앱입니다. rhwp가 제공하는 기능을 바탕으로 파일 열기, 저장, PDF 내보내기, 인쇄, 파일 연결 같은 OS 통합 기능을 제공합니다.
 
 ![ndbHwp editor](assets/screenshots/setupImage.png)
+![ndbHwp editor](assets/screenshots/page.png)
 
 ## 할 수 있는 일
 
