@@ -29,6 +29,7 @@ const overrideIds = [
   'ui/print-dialog',
   'ui/recent-documents-dialog',
   'ui/style-edit-dialog',
+  'ui/cell-border-bg-dialog',
   'ui/toolbar',
   'ui/update-notice',
   'view/canvas-view',

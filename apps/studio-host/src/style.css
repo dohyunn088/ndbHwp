@@ -344,3 +344,37 @@
   font-size: 11px;
   font-weight: 400;
 }
+
+/* ================================================================
+   반응형 레이아웃 오버라이드 (Responsive Toolbar & Style-bar Overrides)
+   ================================================================ */
+#icon-toolbar, #style-bar {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
+}
+
+/* 툴바 스크롤바 스타일링 (얇고 심플한 스타일) */
+#icon-toolbar::-webkit-scrollbar, #style-bar::-webkit-scrollbar {
+  height: 4px;
+}
+#icon-toolbar::-webkit-scrollbar-thumb, #style-bar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+#icon-toolbar::-webkit-scrollbar-track, #style-bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 좁은 화면에서도 아이콘 및 버튼들이 제 모양을 유지하도록 설정 */
+.tb-group, .tb-mode-group, #sb-table-style-group {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+}
+
+.tb-btn, .sb-btn, .sb-combo, .sb-size-group {
+  flex-shrink: 0 !important;
+}
+

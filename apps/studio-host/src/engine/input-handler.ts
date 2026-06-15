@@ -24,6 +24,7 @@ import * as _mouse from './input-handler-mouse';
 import * as _table from './input-handler-table';
 import * as _keyboard from './input-handler-keyboard';
 import * as _text from '@upstream/engine/input-handler-text';
+import { isPageLocalTextEditCommand } from '@upstream/engine/input-edit-invalidation';
 import * as _picture from '@upstream/engine/input-handler-picture';
 import { resolvePageLeft, resolveVirtualScrollPageLeft } from '../view/page-left';
 import { appendSvgElement, appendSvgLine, createOverlayLabel, createSvgRoot } from './svg-dom';
@@ -1513,13 +1514,18 @@ export class InputHandler {
   executeOperation(desc: OperationDescriptor): void {
     switch (desc.kind) {
       case 'command': {
+        const beforePos = this.cursor.getPosition();
         const newPos = this.history.execute(desc.command, this.wasm);
         // 글자 서식 변경은 문서 구조 불변 → 선택 영역 유지
         if (desc.command.type !== 'applyCharFormat') {
           this.cursor.moveTo(newPos);
           this.cursor.resetPreferredX();
         }
-        this.afterEdit();
+        if (this.shouldUsePageLocalRefresh(desc.command.type, beforePos, newPos)) {
+          this.afterPageLocalEdit();
+        } else {
+          this.afterEdit();
+        }
         break;
       }
       case 'snapshot': {
@@ -1589,8 +1595,36 @@ export class InputHandler {
   /** 편집 후 처리: 재렌더링 + 캐럿 갱신 */
   private afterEdit(): void {
     this.lastCellKey = null; // 편집 후 셀 bbox 캐시 무효화
+    this.eventBus.emit('document-mutated', 'input-handler-edit');
     this.eventBus.emit('document-changed');
     this.updateCaret();
+  }
+
+  /** 셀 내부 단일 텍스트 편집 후 처리: 현재 페이지 canvas만 갱신한다. */
+  private afterPageLocalEdit(): void {
+    this.lastCellKey = null;
+    this.eventBus.emit('document-mutated', 'input-handler-edit');
+    const pageIndex = this.cursor.getRect()?.pageIndex;
+    if (typeof pageIndex === 'number' && Number.isInteger(pageIndex) && pageIndex >= 0) {
+      this.eventBus.emit('document-page-invalidated', { pageIndex, reason: 'text-edit' });
+    } else {
+      this.eventBus.emit('document-changed');
+    }
+    this.updateCaret();
+  }
+
+  /** raw IME/iOS 텍스트 입력처럼 command를 거치지 않는 경로의 갱신 라우터. */
+  private afterTextInputEdit(beforePos: DocumentPosition, afterPos: DocumentPosition): void {
+    if (this.isComposing || this.shouldUsePageLocalRefresh('insertText', beforePos, afterPos)) {
+      this.afterPageLocalEdit();
+    } else {
+      this.afterEdit();
+    }
+  }
+
+  private shouldUsePageLocalRefresh(commandType: string, beforePos: DocumentPosition, afterPos: DocumentPosition): boolean {
+    if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return false;
+    return isPageLocalTextEditCommand(commandType, beforePos, afterPos);
   }
 
   /** 캐럿 위치를 갱신한다 */

@@ -444,10 +444,10 @@ function setupZoomControls(): void {
     });
   }
 
-  // 기본 줌을 140%로 설정 (초기 표시도 업데이트)
-  vm.setZoom(1.4);
-  sbZoomVal().textContent = '140%';
-  if (zoomSlider) zoomSlider.value = '140';
+  // 기본 줌을 125%로 설정 (초기 표시도 업데이트)
+  vm.setZoom(1.25);
+  sbZoomVal().textContent = '125%';
+  if (zoomSlider) zoomSlider.value = '125';
 
   document.addEventListener('keydown', (e) => {
     if (!e.ctrlKey && !e.metaKey) return;

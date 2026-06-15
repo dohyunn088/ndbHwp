@@ -45,6 +45,7 @@ export class CanvasView {
       eventBus.on('viewport-scroll', () => this.updateVisiblePages()),
       eventBus.on('viewport-resize', () => this.onViewportResize()),
       eventBus.on('zoom-changed', (zoom) => this.onZoomChanged(zoom as number)),
+      eventBus.on('document-page-invalidated', (payload) => this.refreshInvalidatedPage(payload)),
       eventBus.on('document-changed', () => this.refreshPages()),
     );
   }
@@ -129,19 +130,30 @@ export class CanvasView {
 
   private renderPage(pageIdx: number): void {
     const canvas = this.canvasPool.acquire(pageIdx);
+    if (!canvas.parentElement) {
+      this.scrollContent.appendChild(canvas);
+    }
+    if (!this.renderCanvas(pageIdx, canvas)) {
+      this.releasePage(pageIdx);
+    }
+  }
+
+  private renderCanvas(pageIdx: number, canvas: HTMLCanvasElement): boolean {
     const zoom = this.viewportManager.getZoom();
     const rawDpr = window.devicePixelRatio || 1;
 
     const pageInfo = this.pages[pageIdx];
+    if (!pageInfo) {
+      console.error(`[CanvasView] 페이지 ${pageIdx} 정보가 없습니다`);
+      return false;
+    }
     const MAX_CANVAS_PIXELS = 67108864;
     let dpr = rawDpr;
-    if (pageInfo) {
-      const physW = pageInfo.width * zoom * dpr;
-      const physH = pageInfo.height * zoom * dpr;
-      if (physW * physH > MAX_CANVAS_PIXELS) {
-        dpr = Math.sqrt(MAX_CANVAS_PIXELS / (pageInfo.width * zoom * pageInfo.height * zoom));
-        dpr = Math.max(1, Math.floor(dpr));
-      }
+    const physW = pageInfo.width * zoom * dpr;
+    const physH = pageInfo.height * zoom * dpr;
+    if (physW * physH > MAX_CANVAS_PIXELS) {
+      dpr = Math.sqrt(MAX_CANVAS_PIXELS / (pageInfo.width * zoom * pageInfo.height * zoom));
+      dpr = Math.max(1, Math.floor(dpr));
     }
     const renderScale = zoom * dpr;
 
@@ -153,14 +165,12 @@ export class CanvasView {
       dpr,
     );
     removePageOverlays(this.scrollContent, pageIdx);
-    this.scrollContent.appendChild(canvas);
 
     try {
       this.pageRenderer.renderPage(pageIdx, canvas, renderScale, zoom, dpr);
     } catch (e) {
       console.error(`[CanvasView] 페이지 ${pageIdx} 렌더링 실패:`, e);
-      this.releasePage(pageIdx);
-      return;
+      return false;
     }
 
     applyCanvasDisplayLayout(
@@ -171,6 +181,38 @@ export class CanvasView {
       dpr,
     );
     applyPageOverlayDisplayLayout(this.scrollContent, canvas, pageIdx);
+    return true;
+  }
+
+  private refreshInvalidatedPage(payload: unknown): void {
+    if (this.pages.length === 0) return;
+
+    const pageIndex =
+      typeof payload === 'object' && payload !== null && 'pageIndex' in payload
+        ? Number((payload as { pageIndex?: unknown }).pageIndex)
+        : Number(payload);
+
+    if (!Number.isInteger(pageIndex) || pageIndex < 0) {
+      this.refreshPages();
+      return;
+    }
+
+    const pageCount = this.wasm.pageCount;
+    if (pageCount !== this.pages.length || pageIndex >= pageCount) {
+      this.refreshPages();
+      return;
+    }
+
+    const canvas = this.canvasPool.getCanvas(pageIndex);
+    if (!canvas) {
+      this.updateVisiblePages();
+      return;
+    }
+
+    if (!this.renderCanvas(pageIndex, canvas)) {
+      this.releasePage(pageIndex);
+      this.updateVisiblePages();
+    }
   }
 
   private repositionActivePages(): void {

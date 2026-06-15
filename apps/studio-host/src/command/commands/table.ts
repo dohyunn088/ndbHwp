@@ -1,5 +1,6 @@
 import { tableCommands as upstreamTableCommands } from '@upstream/command/commands/table';
 import type { CommandDef, EditorContext } from '@upstream/command/types';
+import { CellBorderBgDialog } from '@/ui/cell-border-bg-dialog';
 
 const canEnterCellSelection = (ctx: EditorContext) => ctx.inTable || ctx.inCellSelectionMode;
 
@@ -150,6 +151,36 @@ const hopTableCommands: CommandDef[] = [
           return ih.getCursorPosition();
         }
       });
+    },
+  },
+  {
+    id: 'table:border-each',
+    label: '각 셀마다 적용(E)...',
+    canExecute: (ctx) => ctx.inTable || ctx.inCellSelectionMode,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getCursorPosition();
+      if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
+      const tableCtx = { sec: pos.sectionIndex, ppi: pos.parentParaIndex, ci: pos.controlIndex };
+      const range = ih.getSelectedCellRange?.() ?? null;
+      const dialog = new CellBorderBgDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'each', range);
+      dialog.show();
+    },
+  },
+  {
+    id: 'table:border-one',
+    label: '하나의 셀처럼 적용(Z)...',
+    canExecute: (ctx) => ctx.inTable || ctx.inCellSelectionMode,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getCursorPosition();
+      if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
+      const tableCtx = { sec: pos.sectionIndex, ppi: pos.parentParaIndex, ci: pos.controlIndex };
+      const range = ih.getSelectedCellRange?.() ?? null;
+      const dialog = new CellBorderBgDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'asOne', range);
+      dialog.show();
     },
   },
 ];
