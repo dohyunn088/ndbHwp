@@ -1615,7 +1615,10 @@ export class InputHandler {
 
   /** raw IME/iOS 텍스트 입력처럼 command를 거치지 않는 경로의 갱신 라우터. */
   private afterTextInputEdit(beforePos: DocumentPosition, afterPos: DocumentPosition): void {
-    if (this.isComposing || this.shouldUsePageLocalRefresh('insertText', beforePos, afterPos)) {
+    if (this.isComposing) {
+      // 조합 중에는 Canvas 렌더를 완전히 건너뛰고 캐럿 오버레이(DOM)로만 즉시 표시
+      this.updateCaret();
+    } else if (this.shouldUsePageLocalRefresh('insertText', beforePos, afterPos)) {
       this.afterPageLocalEdit();
     } else {
       this.afterEdit();
