@@ -368,13 +368,18 @@
 }
 
 /* 좁은 화면에서도 아이콘 및 버튼들이 제 모양을 유지하도록 설정 */
-.tb-group, .tb-mode-group, #sb-table-style-group {
+.tb-group:not(.tb-headerfooter-group):not(.tb-rotate-group), .tb-mode-group, #sb-table-style-group {
   flex-shrink: 0 !important;
   display: flex !important;
+  flex-wrap: nowrap !important;
+}
+
+.tb-headerfooter-group, .tb-rotate-group {
+  flex-shrink: 0 !important;
+  display: flex;
   flex-wrap: nowrap !important;
 }
 
 .tb-btn, .sb-btn, .sb-combo, .sb-size-group {
   flex-shrink: 0 !important;
 }
-
