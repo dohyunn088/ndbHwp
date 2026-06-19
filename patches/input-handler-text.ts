@@ -274,6 +274,7 @@ export function onCompositionStart(this: any): void {
     this.deleteSelection();
   }
   this.isComposing = true;
+  this.compositionStartCharOffset = 0;
   if (this.cursor.isInHeaderFooter()) {
     // 머리말/꼬리말 모드에서는 hfCharOffset을 anchor의 charOffset으로 사용
     this.compositionAnchor = {
@@ -299,6 +300,7 @@ export function onCompositionEnd(this: any): void {
   this.isComposing = false;
   this.compositionAnchor = null;
   this.compositionLength = 0;
+  this.compositionStartCharOffset = 0;
   this.textarea.value = '';
   this.caret.hideComposition();
 
@@ -365,6 +367,13 @@ export function onInput(this: any, e?: InputEvent): void {
       this.insertTextAtRaw(anchor, text);
       this.compositionLength = text.length;
       this._lastCompositionText = text; // 더블 자음 분리 방지용
+
+      const completedLength = Math.max(0, text.length - 1);
+      if (this.compositionStartCharOffset !== completedLength) {
+        this.compositionStartCharOffset = completedLength;
+        this.afterEdit();
+      }
+
       if (this.cursor.isInHeaderFooter()) {
         this.cursor.setHfCursorPosition(this.cursor.hfParaIdx, anchor.charOffset + text.length);
       } else if (this.cursor.isInFootnote()) {

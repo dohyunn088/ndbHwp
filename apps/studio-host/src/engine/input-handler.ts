@@ -194,6 +194,7 @@ export class InputHandler {
   private isComposing = false;
   private compositionAnchor: DocumentPosition | null = null;
   private compositionLength = 0; // 문서에 삽입된 조합 텍스트 길이
+  compositionStartCharOffset = 0; // 현재 조합 중인 글자의 시작 오프셋
   // iOS 폴백: composition 이벤트 없이 input만으로 한글 조합 처리
   private _iosComposing = false;
   private _iosAnchor: DocumentPosition | null = null;
@@ -1641,36 +1642,40 @@ export class InputHandler {
       if (this.isComposing && this.compositionAnchor && this.compositionLength > 0) {
         try {
           const anchor = this.compositionAnchor;
+          const composingOffset = this.compositionStartCharOffset || 0;
+          const currentAnchorCharOffset = anchor.charOffset + composingOffset;
+
           let startRect: CursorRect;
           if (this.cursor.isInHeaderFooter()) {
             const isHeader = this.cursor.headerFooterMode === 'header';
             startRect = this.wasm.getCursorRectInHeaderFooter(
               this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
-              this.cursor.hfParaIdx, anchor.charOffset, this.cursor.getRect()?.pageIndex ?? 0,
+              this.cursor.hfParaIdx, currentAnchorCharOffset, this.cursor.getRect()?.pageIndex ?? 0,
             )!;
           } else if (this.cursor.isInFootnote()) {
             startRect = this.wasm.getCursorRectInFootnote(
               this.cursor.fnPageNum, this.cursor.fnFootnoteIndex,
-              this.cursor.fnInnerParaIdx, anchor.charOffset,
+              this.cursor.fnInnerParaIdx, currentAnchorCharOffset,
             )!;
           } else if ((anchor.cellPath?.length ?? 0) > 1 && anchor.parentParaIndex !== undefined) {
             startRect = this.wasm.getCursorRectByPath(
               anchor.sectionIndex, anchor.parentParaIndex,
-              JSON.stringify(anchor.cellPath), anchor.charOffset,
+              JSON.stringify(anchor.cellPath), currentAnchorCharOffset,
             );
           } else if (anchor.parentParaIndex !== undefined) {
             startRect = this.wasm.getCursorRectInCell(
               anchor.sectionIndex, anchor.parentParaIndex,
               anchor.controlIndex!, anchor.cellIndex!,
-              anchor.cellParaIndex!, anchor.charOffset,
+              anchor.cellParaIndex!, currentAnchorCharOffset,
             );
           } else {
             startRect = this.wasm.getCursorRect(
-              anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset,
+              anchor.sectionIndex, anchor.paragraphIndex, currentAnchorCharOffset,
             );
           }
           const charWidth = rect.x - startRect.x;
-          const text = this.textarea.value || '';
+          const fullText = this.textarea.value || '';
+          const text = fullText.slice(composingOffset);
           // 현재 커서 위치의 글꼴 정보
           let fontFamily = 'sans-serif';
           try {
