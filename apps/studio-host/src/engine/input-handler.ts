@@ -267,10 +267,12 @@ export class InputHandler {
             'top:0',
             'width:2px',
             'height:20px',
-            'opacity:0.01',
+            'opacity:0',
             'color:transparent',
             'background:transparent',
             'caret-color:transparent',
+            '-webkit-text-fill-color:transparent',
+            'text-shadow:none',
             'border:none',
             'outline:none',
             'resize:none',
@@ -282,7 +284,7 @@ export class InputHandler {
             'padding:0',
             'margin:0',
           ].join(';')
-        : 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;';
+        : 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;-webkit-text-fill-color:transparent;text-shadow:none;';
       this.textarea.setAttribute('autocomplete', 'off');
       this.textarea.setAttribute('autocorrect', 'off');
       this.textarea.setAttribute('autocapitalize', 'off');
@@ -1674,8 +1676,8 @@ export class InputHandler {
             );
           }
           const charWidth = rect.x - startRect.x;
-          const fullText = this.textarea.value || '';
-          const text = fullText.slice(composingOffset);
+          // textarea.value 전체가 아닌, 정확히 현재 조합 중인 글자만 사용 (겹침 방지)
+          const text = (this as any)._lastCompositionText || this.textarea.value || '';
           // 현재 커서 위치의 글꼴 정보
           let fontFamily = 'sans-serif';
           try {
@@ -1683,6 +1685,7 @@ export class InputHandler {
             if (props.fontFamily) fontFamily = props.fontFamily;
           } catch { /* fallback */ }
           this.caret.showComposition(startRect, charWidth, zoom, text, fontFamily);
+          this.caret.update(rect, zoom); // 일반 깜박이는 캐럿도 유지
         } catch {
           // getCursorRect 실패 시 일반 캐럿
           this.caret.hideComposition();

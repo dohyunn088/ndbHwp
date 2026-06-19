@@ -22,12 +22,12 @@ export class CaretRenderer {
     this.caretEl.style.cssText =
       'position:absolute;width:2px;background:#000;pointer-events:none;z-index:10;display:none;';
 
-    // IME 조합 오버레이 (블랙박스 + 흰색 글자)
+    // IME 조합 오버레이 (투명 배경 + 검은색 글자 + 밑줄)
     this.compEl = document.createElement('div');
     this.compEl.className = 'caret-composition';
     this.compEl.style.cssText =
-      'position:absolute;background:#000;color:#fff;pointer-events:none;z-index:10;display:none;' +
-      'line-height:1;overflow:hidden;white-space:pre;text-align:center;box-sizing:border-box;';
+      'position:absolute;background:transparent;color:#000;pointer-events:none;z-index:10;display:none;' +
+      'line-height:1;overflow:hidden;white-space:pre;text-align:left;box-sizing:border-box;border-bottom:1px solid #000;';
 
     // scroll-content 안에 배치 (스크롤과 함께 이동)
     const scrollContent = container.querySelector('#scroll-content');
@@ -75,13 +75,10 @@ export class CaretRenderer {
     this.ensureAttached();
     this.currentRect = rect;
     this.updatePosition(zoom);
-    // 조합 모드가 아닐 때만 일반 캐럿 표시
-    if (!this.isCompMode) {
-      this.caretEl.style.display = 'block';
-      this.caretEl.style.opacity = '1';
-      this.visible = true;
-      this.startBlink();
-    }
+    this.caretEl.style.display = 'block';
+    this.caretEl.style.opacity = '1';
+    this.visible = true;
+    this.startBlink();
   }
 
   /** 드래그 중 캐럿 위치를 갱신한다. 기존 깜박임 타이머는 유지한다. */
@@ -89,13 +86,11 @@ export class CaretRenderer {
     this.ensureAttached();
     this.currentRect = rect;
     this.updatePosition(zoom);
-    if (!this.isCompMode) {
-      this.caretEl.style.display = 'block';
-      this.caretEl.style.opacity = '1';
-      this.visible = true;
-      if (this.blinkTimer === null) {
-        this.startBlink();
-      }
+    this.caretEl.style.display = 'block';
+    this.caretEl.style.opacity = '1';
+    this.visible = true;
+    if (this.blinkTimer === null) {
+      this.startBlink();
     }
   }
 
@@ -103,9 +98,6 @@ export class CaretRenderer {
   showComposition(startRect: CursorRect, charWidth: number, zoom: number, text: string, fontFamily: string): void {
     this.ensureAttached();
     this.isCompMode = true;
-
-    // 일반 캐럿 숨기기
-    this.caretEl.style.display = 'none';
 
     const { pageIndex, x, y, height } = startRect;
     const pageOffset = this.virtualScroll.getPageOffset(pageIndex);
@@ -158,11 +150,13 @@ export class CaretRenderer {
   private startBlink(): void {
     this.stopBlink();
     this.visible = true;
-    const target = this.isCompMode ? this.compEl : this.caretEl;
-    target.style.opacity = '1';
+    this.caretEl.style.opacity = '1';
+    this.compEl.style.opacity = '1'; // 조합박스는 항상 보이게 유지
     this.blinkTimer = window.setInterval(() => {
       this.visible = !this.visible;
-      target.style.opacity = this.visible ? '1' : '0';
+      // 일반 세로선 캐럿만 깜빡임
+      this.caretEl.style.opacity = this.visible ? '1' : '0';
+      this.compEl.style.opacity = '1';
     }, 500);
   }
 

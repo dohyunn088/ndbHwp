@@ -319,6 +319,9 @@ export function onCompositionEnd(this: any): void {
     }
   }
 
+  // 조합된 글자가 WebAssembly 화면에 그려지도록 강제 렌더링 호출
+  this.afterEdit();
+
   // 조합 종료 후 대기 중인 탐색 키 처리 (IME 조합 중 방향키 등)
   if (this._pendingNavAfterIME) {
     const nav = this._pendingNavAfterIME;
