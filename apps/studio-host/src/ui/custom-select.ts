@@ -71,6 +71,18 @@ function enhanceCustomSelect(select: HTMLSelectElement): void {
     sync();
     root.classList.add('open');
     trigger.setAttribute('aria-expanded', 'true');
+    
+    // 자동 스크롤 연산
+    const selected = menu.querySelector<HTMLElement>('.custom-select-option.selected');
+    if (selected) {
+      requestAnimationFrame(() => {
+        const menuRect = menu.getBoundingClientRect();
+        const selectedRect = selected.getBoundingClientRect();
+        if (selectedRect.top < menuRect.top || selectedRect.bottom > menuRect.bottom) {
+          menu.scrollTop = selected.offsetTop - menu.clientHeight / 2 + selected.clientHeight / 2;
+        }
+      });
+    }
   };
 
   const toggle = () => {

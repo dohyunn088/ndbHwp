@@ -349,8 +349,6 @@
    반응형 레이아웃 오버라이드 (Responsive Toolbar & Style-bar Overrides)
    ================================================================ */
 #icon-toolbar, #style-bar {
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
   white-space: nowrap !important;
   flex-wrap: nowrap !important;
 }
