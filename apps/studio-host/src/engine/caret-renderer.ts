@@ -26,7 +26,7 @@ export class CaretRenderer {
     this.compEl = document.createElement('div');
     this.compEl.className = 'caret-composition';
     this.compEl.style.cssText =
-      'position:absolute;background:transparent;color:#000;pointer-events:none;z-index:10;display:none;' +
+      'position:absolute;background:transparent;color:transparent;pointer-events:none;z-index:10;display:none;' +
       'line-height:1;overflow:hidden;white-space:pre;text-align:left;box-sizing:border-box;border-bottom:1px solid #000;';
 
     // scroll-content 안에 배치 (스크롤과 함께 이동)
@@ -58,6 +58,35 @@ export class CaretRenderer {
     this.currentRect = null;
   }
 
+  /**
+   * IME 조합 텍스트를 캐럿 영역에 오버레이한다
+   * (Canvas에 아직 렌더링되지 않은 중간 조합 텍스트 표시용)
+   */
+  updateComposition(
+    rect: CursorRect,
+    zoom: number,
+    text: string,
+    fontFamily: string,
+    width: number,
+  ): void {
+    this.ensureAttached();
+    this.isCompMode = true;
+    this.currentRect = rect;
+    this.updatePosition(zoom);
+
+    // 실제 화면처럼 보이도록 배경 투명, 글자색은 투명하게 (Wasm이 그리도록) 지정
+    this.compEl.style.background = 'transparent';
+    this.compEl.style.color = 'transparent';
+
+    this.compEl.style.fontFamily = fontFamily;
+    this.compEl.style.width = `${width * zoom}px`;
+    this.compEl.textContent = text;
+    this.compEl.style.display = 'block';
+    this.compEl.style.opacity = '1';
+    this.visible = true;
+    this.startBlink();
+  }
+
   /** 줌/스크롤 변경 시 위치를 갱신한다 */
   updatePosition(zoom: number): void {
     if (!this.currentRect) return;
@@ -68,6 +97,14 @@ export class CaretRenderer {
     this.caretEl.style.left = `${pageLeft + x * zoom}px`;
     this.caretEl.style.top = `${pageOffset + y * zoom}px`;
     this.caretEl.style.height = `${height * zoom}px`;
+    
+    if (this.isCompMode) {
+      this.compEl.style.left = `${pageLeft + x * zoom}px`;
+      this.compEl.style.top = `${pageOffset + y * zoom}px`;
+      this.compEl.style.height = `${height * zoom}px`;
+      this.compEl.style.fontSize = `${height * 0.85 * zoom}px`;
+      this.compEl.style.lineHeight = `${height * zoom}px`;
+    }
   }
 
   /** 새 CursorRect로 갱신한다 (깜박임 리셋) */

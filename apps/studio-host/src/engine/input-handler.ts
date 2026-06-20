@@ -23,7 +23,7 @@ import { resolveTextInputAnchorRect } from './text-input-anchor';
 import * as _mouse from './input-handler-mouse';
 import * as _table from './input-handler-table';
 import * as _keyboard from './input-handler-keyboard';
-import * as _text from '@upstream/engine/input-handler-text';
+import * as _text from './input-handler-text';
 import { isPageLocalTextEditCommand } from '@upstream/engine/input-edit-invalidation';
 import * as _picture from '@upstream/engine/input-handler-picture';
 import { resolvePageLeft, resolveVirtualScrollPageLeft } from '../view/page-left';
@@ -1618,10 +1618,7 @@ export class InputHandler {
 
   /** raw IME/iOS 텍스트 입력처럼 command를 거치지 않는 경로의 갱신 라우터. */
   private afterTextInputEdit(beforePos: DocumentPosition, afterPos: DocumentPosition): void {
-    if (this.isComposing) {
-      // 조합 중에는 Canvas 렌더를 완전히 건너뛰고 캐럿 오버레이(DOM)로만 즉시 표시
-      this.updateCaret();
-    } else if (this.shouldUsePageLocalRefresh('insertText', beforePos, afterPos)) {
+    if (this.shouldUsePageLocalRefresh('insertText', beforePos, afterPos)) {
       this.afterPageLocalEdit();
     } else {
       this.afterEdit();
@@ -1676,8 +1673,8 @@ export class InputHandler {
             );
           }
           const charWidth = rect.x - startRect.x;
-          // textarea.value 전체가 아닌, 정확히 현재 조합 중인 글자만 사용 (겹침 방지)
-          const text = (this as any)._lastCompositionText || this.textarea.value || '';
+          const fullText = this.textarea.value || '';
+          const text = fullText.slice(composingOffset);
           // 현재 커서 위치의 글꼴 정보
           let fontFamily = 'sans-serif';
           try {
