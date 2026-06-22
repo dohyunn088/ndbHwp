@@ -145,11 +145,15 @@ export class Ruler {
 
   /** 커서가 셀 안/밖으로 이동했을 때 호출 */
   private onCellChanged(data: { inCell: boolean; cellX?: number; cellWidth?: number }): void {
-    if (data.inCell && data.cellX !== undefined && data.cellWidth !== undefined) {
-      if (this.inCell && data.cellX === this.cellX && data.cellWidth === this.cellWidth) return;
-      this.inCell = true;
-      this.cellX = data.cellX;
-      this.cellWidth = data.cellWidth;
+    if (data.inCell) {
+      if (data.cellX !== undefined && data.cellWidth !== undefined) {
+        if (this.inCell && data.cellX === this.cellX && data.cellWidth === this.cellWidth) return;
+        this.inCell = true;
+        this.cellX = data.cellX;
+        this.cellWidth = data.cellWidth;
+      } else {
+        return;
+      }
     } else {
       if (!this.inCell) return; // 셀 밖→셀 밖: 변경 없음
       this.inCell = false;

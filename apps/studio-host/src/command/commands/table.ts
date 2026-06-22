@@ -165,6 +165,33 @@ const hopTableCommands: CommandDef[] = [
       const tableCtx = { sec: pos.sectionIndex, ppi: pos.parentParaIndex, ci: pos.controlIndex };
       const range = ih.getSelectedCellRange?.() ?? null;
       const dialog = new CellBorderBgDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'each', range);
+      dialog.onApply = (mods, scope) => {
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'applyCellBorderBg',
+          operation: (wasm) => {
+            const dims = wasm.getTableDimensions(tableCtx.sec, tableCtx.ppi, tableCtx.ci);
+            for (let i = 0; i < dims.cellCount; i++) {
+              let inside = false;
+              if (scope === 'all') {
+                inside = true;
+              } else if (scope === 'selected' && range) {
+                const cellInfo = wasm.getCellInfo(tableCtx.sec, tableCtx.ppi, tableCtx.ci, i);
+                inside = cellInfo.row >= range.startRow && cellInfo.row <= range.endRow &&
+                         cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
+              } else if (i === pos.cellIndex) {
+                inside = true;
+              }
+              if (inside) {
+                const props = wasm.getCellProperties(tableCtx.sec, tableCtx.ppi, tableCtx.ci, i);
+                Object.assign(props, mods);
+                wasm.setCellProperties(tableCtx.sec, tableCtx.ppi, tableCtx.ci, i, props);
+              }
+            }
+            return ih.getCursorPosition();
+          }
+        });
+      };
       dialog.show();
     },
   },
@@ -180,6 +207,33 @@ const hopTableCommands: CommandDef[] = [
       const tableCtx = { sec: pos.sectionIndex, ppi: pos.parentParaIndex, ci: pos.controlIndex };
       const range = ih.getSelectedCellRange?.() ?? null;
       const dialog = new CellBorderBgDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'asOne', range);
+      dialog.onApply = (mods, scope) => {
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'applyCellBorderBg',
+          operation: (wasm) => {
+            const dims = wasm.getTableDimensions(tableCtx.sec, tableCtx.ppi, tableCtx.ci);
+            for (let i = 0; i < dims.cellCount; i++) {
+              let inside = false;
+              if (scope === 'all') {
+                inside = true;
+              } else if (scope === 'selected' && range) {
+                const cellInfo = wasm.getCellInfo(tableCtx.sec, tableCtx.ppi, tableCtx.ci, i);
+                inside = cellInfo.row >= range.startRow && cellInfo.row <= range.endRow &&
+                         cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
+              } else if (i === pos.cellIndex) {
+                inside = true;
+              }
+              if (inside) {
+                const props = wasm.getCellProperties(tableCtx.sec, tableCtx.ppi, tableCtx.ci, i);
+                Object.assign(props, mods);
+                wasm.setCellProperties(tableCtx.sec, tableCtx.ppi, tableCtx.ci, i, props);
+              }
+            }
+            return ih.getCursorPosition();
+          }
+        });
+      };
       dialog.show();
     },
   },

@@ -99,6 +99,9 @@ export class Toolbar {
     this.borderColorPicker = container.querySelector('#border-color-picker')!;
     this.borderColorBar = container.querySelector('#border-color-bar')!;
 
+    // 초기 상태는 표 밖에 있는 것으로 간주하여 숨김 처리
+    this.updateTableCellStyleState({ inCell: false });
+
     this.setupFormatButtons();
     this.setupCharfxDropdown();
     this.setupLineSpacingDropdown();
@@ -833,11 +836,11 @@ export class Toolbar {
 
   private updateTableCellStyleState(info: { inCell: boolean }): void {
     if (info.inCell) {
-      this.tableStyleGroup.style.display = 'inline-flex';
-      this.tableSep.style.display = 'inline-block';
+      this.tableStyleGroup.style.setProperty('display', 'inline-flex', 'important');
+      this.tableSep.style.setProperty('display', 'inline-block', 'important');
     } else {
-      this.tableStyleGroup.style.display = 'none';
-      this.tableSep.style.display = 'none';
+      this.tableStyleGroup.style.setProperty('display', 'none', 'important');
+      this.tableSep.style.setProperty('display', 'none', 'important');
     }
   }
 }

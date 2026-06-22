@@ -50,6 +50,9 @@ export class CellBorderBgDialog extends ModalDialog {
     { type: 1, width: 0, color: '#000000' },
     { type: 1, width: 0, color: '#000000' },
   ];
+  private borderModified = false;
+  private bgModified = false;
+  public onApply?: (mods: Partial<CellProperties>, scope: string) => void;
   private borderApplyImmediateCheck!: HTMLInputElement;
   private borderScopeRadios!: HTMLInputElement[];
 
@@ -297,11 +300,12 @@ export class CellBorderBgDialog extends ModalDialog {
       width: parseInt(this.borderWidthSelect.value, 10),
       color: this.borderColorInput.value,
     };
-    if (dirIdx === 4) {
+    if (dirIdx === -1) {
       this.borderEdits = [val, val, val, val];
     } else {
       this.borderEdits[dirIdx] = val;
     }
+    this.borderModified = true;
   }
 
   private updateBorderPreview(): void {
@@ -332,7 +336,7 @@ export class CellBorderBgDialog extends ModalDialog {
     const drawLine = (x1: number, y1: number, x2: number, y2: number, b: { type: number; width: number; color: string }) => {
       if (b.type === 0) return;
       const w = Math.max(0.5, (b.width + 1) * 0.7);
-      if (b.type === 7) {
+      if (b.type === 8) {
         const offset = w * 0.8;
         const isVert = x1 === x2;
         for (const off of [-offset, offset]) {
@@ -371,11 +375,16 @@ export class CellBorderBgDialog extends ModalDialog {
     const noneRow = this.row();
     this.bgNoneRadio = document.createElement('input');
     this.bgNoneRadio.type = 'radio';
-    this.bgNoneRadio.name = 'cellBgFill';
-    this.bgNoneRadio.checked = true;
-    this.bgNoneRadio.addEventListener('change', () => this.updateBgPreview());
-    noneRow.appendChild(this.bgNoneRadio);
-    noneRow.appendChild(document.createTextNode(' 채우기 없음'));
+    this.bgNoneRadio.name = 'tcp-bg-fill';
+    this.bgNoneRadio.addEventListener('change', () => { this.bgModified = true; this.updateBgPreview(); });
+    const noneLabelText = document.createTextNode(' 색 채우기 없음(N)');
+    this.bgNoneRadio.id = 'bgNoneRadio';
+    const bgNoneLbl = document.createElement('label');
+    bgNoneLbl.htmlFor = 'bgNoneRadio';
+    bgNoneLbl.appendChild(this.bgNoneRadio);
+    bgNoneLbl.appendChild(noneLabelText);
+    bgNoneLbl.className = 'dialog-radio-group';
+    noneRow.appendChild(bgNoneLbl);
     fillSection.appendChild(noneRow);
 
     const colorRow = this.row();
@@ -400,6 +409,7 @@ export class CellBorderBgDialog extends ModalDialog {
     this.bgColorPicker.style.height = '22px';
     this.bgColorPicker.addEventListener('input', () => {
       this.bgColorRadio.checked = true;
+      this.bgModified = true;
       this.updateBgPreview();
     });
     faceRow.appendChild(this.bgColorPicker);
@@ -414,6 +424,7 @@ export class CellBorderBgDialog extends ModalDialog {
     this.bgPatternColorPicker.style.height = '22px';
     this.bgPatternColorPicker.addEventListener('input', () => {
       this.bgColorRadio.checked = true;
+      this.bgModified = true;
       this.updateBgPreview();
     });
     patColorRow.appendChild(this.bgPatternColorPicker);
@@ -422,11 +433,12 @@ export class CellBorderBgDialog extends ModalDialog {
     const patTypeRow = this.row();
     patTypeRow.appendChild(this.label('무늬모양(L)'));
     this.bgPatternTypeSelect = this.selectOptions([
-      ['0', '없음'], ['1', '가로줄'], ['2', '세로줄'], ['3', '역슬래시'],
+      ['-1', '없음'], ['1', '가로줄'], ['2', '세로줄'], ['3', '역슬래시'],
       ['4', '슬래시'], ['5', '십자'], ['6', 'X자'],
     ]);
     this.bgPatternTypeSelect.addEventListener('change', () => {
       this.bgColorRadio.checked = true;
+      this.bgModified = true;
       this.updateBgPreview();
     });
     patTypeRow.appendChild(this.bgPatternTypeSelect);
@@ -619,23 +631,35 @@ export class CellBorderBgDialog extends ModalDialog {
     const newProps: Record<string, unknown> = {};
 
     // 테두리
-    newProps.borderLeft = this.borderEdits[0];
-    newProps.borderRight = this.borderEdits[1];
-    newProps.borderTop = this.borderEdits[2];
-    newProps.borderBottom = this.borderEdits[3];
+    if (this.borderModified) {
+      newProps.borderLeft = this.borderEdits[0];
+      newProps.borderRight = this.borderEdits[1];
+      newProps.borderTop = this.borderEdits[2];
+      newProps.borderBottom = this.borderEdits[3];
+    }
 
     // 배경
-    if (this.bgColorRadio.checked) {
-      newProps.fillType = 'solid';
-      newProps.fillColor = this.bgColorPicker.value;
-      newProps.patternColor = this.bgPatternColorPicker.value;
-      newProps.patternType = parseInt(this.bgPatternTypeSelect.value, 10);
-    } else {
-      newProps.fillType = 'none';
+    if (this.bgModified) {
+      if (this.bgColorRadio.checked) {
+        newProps.fillType = 'solid';
+        newProps.fillColor = this.bgColorPicker.value;
+        newProps.patternColor = this.bgPatternColorPicker.value;
+        newProps.patternType = parseInt(this.bgPatternTypeSelect.value, 10);
+      } else {
+        newProps.fillType = 'none';
+      }
     }
+
+    if (Object.keys(newProps).length === 0) return;
 
     // 적용 범위 결정: 테두리 탭의 scope를 기준으로 판단
     const borderScope = this.borderScopeRadios?.find(r => r.checked)?.value ?? 'selected';
+
+    if (this.onApply) {
+      this.onApply(newProps as Partial<CellProperties>, borderScope);
+      return;
+    }
+
     if (borderScope === 'all') {
       const dims = this.wasm.getTableDimensions(sec, ppi, ci);
       for (let i = 0; i < dims.cellCount; i++) {

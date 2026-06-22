@@ -386,6 +386,9 @@ export class InputHandler {
       if (!this.active) return;
       if (this.cursor.hasSelection() || this.cursor.isInCellSelectionMode()) {
         this.applyCharFormat(props as Partial<CharProperties>);
+      } else {
+        // 선택 영역은 없지만, 현재 커서가 있는 빈 문단이라면 서식 변경을 허용한다.
+        this.applyCharFormatToEmptyParagraph(props as Partial<CharProperties>);
       }
       // 서식바 조작으로 빠진 포커스를 항상 복원
       this.focusTextarea();
@@ -1315,7 +1318,14 @@ export class InputHandler {
               const paraCount = wasm.getCellParagraphCount(sec, ppi, ci, i);
               for (let p = 0; p < paraCount; p++) {
                 const len = wasm.getCellParagraphLength(sec, ppi, ci, i, p);
-                wasm.applyCharFormatInCell(sec, ppi, ci, i, p, 0, len, propsJson);
+                if (len === 0) {
+                  // 빈 문단인 경우, 더미 스페이스를 삽입하여 서식을 강제 지정 후 삭제
+                  wasm.insertTextInCell(sec, ppi, ci, i, p, 0, ' ');
+                  wasm.applyCharFormatInCell(sec, ppi, ci, i, p, 0, 1, propsJson);
+                  wasm.deleteTextInCell(sec, ppi, ci, i, p, 0, 1);
+                } else {
+                  wasm.applyCharFormatInCell(sec, ppi, ci, i, p, 0, len, propsJson);
+                }
               }
             }
           }
@@ -1331,36 +1341,73 @@ export class InputHandler {
     this.executeOperation({ kind: 'command', command: cmd });
   }
 
+  /** 선택 영역 없이 빈 문단에 있는 경우 서식을 적용한다 */
+  private applyCharFormatToEmptyParagraph(props: Partial<CharProperties>): void {
+    const pos = this.cursor.getPosition();
+    const propsJson = JSON.stringify(props);
+
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'applyCharFormat',
+      operation: (wasm) => {
+        if (pos.parentParaIndex !== undefined && pos.controlIndex !== undefined && pos.cellIndex !== undefined) {
+          const len = wasm.getCellParagraphLength(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.paragraphIndex);
+          if (len === 0) {
+            wasm.insertTextInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.paragraphIndex, 0, ' ');
+            wasm.applyCharFormatInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.paragraphIndex, 0, 1, propsJson);
+            wasm.deleteTextInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.paragraphIndex, 0, 1);
+          }
+        } else {
+          const len = wasm.getParagraphLength(pos.sectionIndex, pos.paragraphIndex);
+          if (len === 0) {
+            wasm.insertText(pos.sectionIndex, pos.paragraphIndex, 0, ' ');
+            wasm.applyCharFormat(pos.sectionIndex, pos.paragraphIndex, 0, 1, propsJson);
+            wasm.deleteText(pos.sectionIndex, pos.paragraphIndex, 0, 1);
+          }
+        }
+        return this.cursor.getPosition();
+      }
+    });
+  }
+
   /** 토글 서식 적용 (상호 배타 처리 포함) */
   private applyToggleFormat(prop: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'emboss' | 'engrave' | 'outline' | 'superscript' | 'subscript'): void {
-    if (!this.cursor.hasSelection() && !this.cursor.isInCellSelectionMode()) return;
+    const isSelectionEmpty = !this.cursor.hasSelection() && !this.cursor.isInCellSelectionMode();
     const current = this.getCharPropertiesAtCursor();
+
+    const applyFunc = (mods: Partial<CharProperties>) => {
+      if (isSelectionEmpty) {
+        this.applyCharFormatToEmptyParagraph(mods);
+      } else {
+        this.applyCharFormat(mods);
+      }
+    };
 
     if (prop === 'emboss') {
       const newVal = !current.emboss;
       const mods: Partial<CharProperties> = { emboss: newVal };
       if (newVal) mods.engrave = false;
-      this.applyCharFormat(mods);
+      applyFunc(mods);
     } else if (prop === 'engrave') {
       const newVal = !current.engrave;
       const mods: Partial<CharProperties> = { engrave: newVal };
       if (newVal) mods.emboss = false;
-      this.applyCharFormat(mods);
+      applyFunc(mods);
     } else if (prop === 'outline') {
       const curOutline = current.outlineType ?? 0;
-      this.applyCharFormat({ outlineType: curOutline ? 0 : 1 });
+      applyFunc({ outlineType: curOutline ? 0 : 1 });
     } else if (prop === 'superscript') {
       const newVal = !current.superscript;
       const mods: Partial<CharProperties> = { superscript: newVal };
       if (newVal) mods.subscript = false;
-      this.applyCharFormat(mods);
+      applyFunc(mods);
     } else if (prop === 'subscript') {
       const newVal = !current.subscript;
       const mods: Partial<CharProperties> = { subscript: newVal };
       if (newVal) mods.superscript = false;
-      this.applyCharFormat(mods);
+      applyFunc(mods);
     } else {
-      this.applyCharFormat({ [prop]: !current[prop] });
+      applyFunc({ [prop]: !current[prop] });
     }
   }
 
@@ -1455,6 +1502,8 @@ export class InputHandler {
         const cellKey = `${pos.sectionIndex}:${pos.parentParaIndex}:${pos.controlIndex}:${pos.cellIndex}`;
         if (cellKey !== this.lastCellKey) {
           this.lastCellKey = cellKey;
+          this.eventBus.emit('cursor-cell-changed', { inCell: true });
+          
           const sec = pos.sectionIndex;
           const ppi = pos.parentParaIndex!;
           const ci = pos.controlIndex!;
