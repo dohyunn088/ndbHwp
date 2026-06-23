@@ -33,14 +33,14 @@ const hopTableCommands: CommandDef[] = [
         operation: (wasm) => {
           const { sec, ppi, ci } = tableCtx;
           const dims = wasm.getTableDimensions(sec, ppi, ci);
-          
+
           for (let i = 0; i < dims.cellCount; i++) {
             const cellInfo = wasm.getCellInfo(sec, ppi, ci, i);
             const inside = cellInfo.row >= range.startRow && cellInfo.row <= range.endRow &&
-                           cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
+              cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
             if (inside) {
               const props = wasm.getCellProperties(sec, ppi, ci, i);
-              
+
               if (color === 'none' || !color) {
                 props.fillType = 'none';
               } else {
@@ -79,11 +79,11 @@ const hopTableCommands: CommandDef[] = [
         operation: (wasm) => {
           const { sec, ppi, ci } = tableCtx;
           const dims = wasm.getTableDimensions(sec, ppi, ci);
-          
+
           for (let i = 0; i < dims.cellCount; i++) {
             const cellInfo = wasm.getCellInfo(sec, ppi, ci, i);
             const inside = cellInfo.row >= range.startRow && cellInfo.row <= range.endRow &&
-                           cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
+              cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
             if (!inside) continue;
 
             const props = wasm.getCellProperties(sec, ppi, ci, i);
@@ -178,7 +178,7 @@ const hopTableCommands: CommandDef[] = [
               } else if (scope === 'selected' && range) {
                 const cellInfo = wasm.getCellInfo(tableCtx.sec, tableCtx.ppi, tableCtx.ci, i);
                 inside = cellInfo.row >= range.startRow && cellInfo.row <= range.endRow &&
-                         cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
+                  cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
               } else if (i === pos.cellIndex) {
                 inside = true;
               }
@@ -220,7 +220,7 @@ const hopTableCommands: CommandDef[] = [
               } else if (scope === 'selected' && range) {
                 const cellInfo = wasm.getCellInfo(tableCtx.sec, tableCtx.ppi, tableCtx.ci, i);
                 inside = cellInfo.row >= range.startRow && cellInfo.row <= range.endRow &&
-                         cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
+                  cellInfo.col >= range.startCol && cellInfo.col <= range.endCol;
               } else if (i === pos.cellIndex) {
                 inside = true;
               }

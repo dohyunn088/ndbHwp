@@ -1351,11 +1351,12 @@ export class InputHandler {
       operationType: 'applyCharFormat',
       operation: (wasm) => {
         if (pos.parentParaIndex !== undefined && pos.controlIndex !== undefined && pos.cellIndex !== undefined) {
-          const len = wasm.getCellParagraphLength(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.paragraphIndex);
+          const cpi = pos.cellParaIndex!;
+          const len = wasm.getCellParagraphLength(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, cpi);
           if (len === 0) {
-            wasm.insertTextInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.paragraphIndex, 0, ' ');
-            wasm.applyCharFormatInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.paragraphIndex, 0, 1, propsJson);
-            wasm.deleteTextInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.paragraphIndex, 0, 1);
+            wasm.insertTextInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, cpi, 0, ' ');
+            wasm.applyCharFormatInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, cpi, 0, 1, propsJson);
+            wasm.deleteTextInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, cpi, 0, 1);
           }
         } else {
           const len = wasm.getParagraphLength(pos.sectionIndex, pos.paragraphIndex);
@@ -1373,10 +1374,28 @@ export class InputHandler {
   /** 토글 서식 적용 (상호 배타 처리 포함) */
   private applyToggleFormat(prop: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'emboss' | 'engrave' | 'outline' | 'superscript' | 'subscript'): void {
     const isSelectionEmpty = !this.cursor.hasSelection() && !this.cursor.isInCellSelectionMode();
+    
+    // 빈 문단인 경우 서식을 적용할지 판단
+    let isEmptyParagraph = false;
+    if (isSelectionEmpty) {
+      const pos = this.cursor.getPosition();
+      let len = 0;
+      if (pos.parentParaIndex !== undefined && pos.controlIndex !== undefined && pos.cellIndex !== undefined) {
+        len = this.wasm.getCellParagraphLength(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.cellParaIndex!);
+      } else {
+        len = this.wasm.getParagraphLength(pos.sectionIndex, pos.paragraphIndex);
+      }
+      if (len === 0) {
+        isEmptyParagraph = true;
+      } else {
+        return; // 선택영역도 없고 빈 문단도 아니면 아무것도 안 함
+      }
+    }
+
     const current = this.getCharPropertiesAtCursor();
 
     const applyFunc = (mods: Partial<CharProperties>) => {
-      if (isSelectionEmpty) {
+      if (isEmptyParagraph) {
         this.applyCharFormatToEmptyParagraph(mods);
       } else {
         this.applyCharFormat(mods);
