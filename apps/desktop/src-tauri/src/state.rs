@@ -709,6 +709,9 @@ pub(crate) fn editable_core_from_bytes(
 ) -> Result<DocumentCore, String> {
     let mut core =
         DocumentCore::from_bytes(bytes).map_err(|e| format!("{}: {}", parse_context, e))?;
+    
+    crate::compatibility::normalize_document(&mut core);
+
     core.convert_to_editable_native()
         .map_err(|e| format!("{}: {}", convert_context, e))?;
     Ok(core)

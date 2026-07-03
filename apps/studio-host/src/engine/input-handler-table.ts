@@ -519,9 +519,13 @@ export function resizeCellByKeyboard(this: any, key: 'ArrowUp' | 'ArrowDown' | '
   }
 }
 
-/** 전체 표 비율 리사이즈 (phase 3, Ctrl+방향키) */
+/** 전체 표 비율 리사이즈 (phase 3, Ctrl+방향키 또는 표 객체 선택 상태 Shift+방향키) */
 export function resizeTableProportional(this: any, key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
-  const ctx = this.cursor.getCellTableContext();
+  let ctx = this.cursor.getCellTableContext();
+  if (!ctx && this.cursor.isInTableObjectSelection()) {
+    const ref = this.cursor.getSelectedTableRef();
+    if (ref) ctx = { sec: ref.sec, ppi: ref.ppi, ci: ref.ci };
+  }
   if (!ctx) return;
 
   const DELTA = 200; // 1 키스트로크 당 200 HWPUNIT

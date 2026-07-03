@@ -2507,7 +2507,11 @@ export class InputHandler {
         try {
           this.wasm.copyControl(ref.sec, ref.ppi, ref.ci);
           const text = this.wasm.getClipboardText() || '[표]';
-          navigator.clipboard.writeText(text).catch(() => {});
+          let html = '';
+          try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci) || ''; } catch { /* 무시 */ }
+          const markedHtml = _keyboard.prepareRhwpInternalClipboardHtml(this, html, text);
+          _keyboard.writeTextHtmlToClipboard(text, markedHtml)
+            .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
         } catch (err) {
           console.warn('[InputHandler] 표 복사 실패:', err);
         }

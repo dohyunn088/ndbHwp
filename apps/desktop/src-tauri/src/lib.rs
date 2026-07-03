@@ -1,5 +1,6 @@
 mod app_quit;
 mod commands;
+mod compatibility;
 mod desktop_shortcut;
 mod font_catalog;
 #[cfg(target_os = "linux")]
