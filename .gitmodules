@@ -1,4 +1,4 @@
 [submodule "third_party/rhwp"]
 	path = third_party/rhwp
-	url = https://github.com/edwardkim/rhwp.git
+	url = https://github.com/dohyunn088/rhwp.git
 	ignore = dirty
